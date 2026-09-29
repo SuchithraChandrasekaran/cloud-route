@@ -1,0 +1,5 @@
+strands-agents[openai]
+strands-agents-tools
+networkx
+kubernetes
+pytest
