@@ -40,7 +40,7 @@ Everything runs on AWS free tier, a local install, or open-source software. Kube
 on Minikube/K3s locally; EKS is used only for a short verification window and destroyed
 immediately after via `terraform destroy`. The AI co-pilot runs entirely on a local model
 (Ollama) — no hosted model API calls. Everything lives in a single AWS account, with
-dev/staging/prod separated by naming convention (`migrate-grid-dev-*`, `-staging-*`,
+dev/staging/prod separated by naming convention (`cloud-route-dev-*`, `-staging-*`,
 `-prod-*`) and an `Environment` tag on every resource, rather than separate accounts. A
 billing alarm is set at $1 from day one as a hard safety net.
 
@@ -122,7 +122,7 @@ Synthetic app fleet (10-15 services)
 │   └── architecture.md          # Full system diagram and write-up
 ├── scripts/
 │   └── cleanup.sh                # One-command teardown for anything not free-tier
-├── migrate-grid-daily-tasks.csv   # Day-by-day build tracker
+├── cloud-route-daily-tasks.csv   # Day-by-day build tracker
 ├── .gitignore
 ├── LICENSE
 └── README.md
