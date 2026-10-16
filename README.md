@@ -1,4 +1,4 @@
-# migrate-grid
+# cloud-route
 
 A zero-budget build to design, deploy, and operate a self-healing, self-observing cloud
 platform on AWS — culminating in an AI co-pilot that doesn't just explain problems, but
@@ -169,7 +169,6 @@ Local LLM setup, event summarization, an evaluated readiness scorer, local RAG-b
 remediation proposals with a human approval gate, chaos testing with logged recovery
 numbers, and final documentation and publishing.
 
-See `migrate-grid-daily-tasks.csv` for the full task-by-task breakdown.
 
 ## Architecture Decision Records
 
