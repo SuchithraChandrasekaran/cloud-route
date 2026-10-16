@@ -1,5 +1,5 @@
 """
-Core dependency-graph engine for migrate-grid.
+Core dependency-graph engine for cloud-route.
 
 Two responsibilities:
   1. Compute a safe migration order (topological generations) and, within
@@ -18,7 +18,7 @@ import networkx as nx
 from typing import List, Dict, Any, Tuple
 
 
-class MigrateGridOptimizer:
+class CloudRouteOptimizer:
     def __init__(self):
         self.graph = nx.DiGraph()
 

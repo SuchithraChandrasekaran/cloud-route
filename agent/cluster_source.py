@@ -74,7 +74,7 @@ def load_blueprint_from_cluster(namespace: str = "default", kubeconfig_path: str
     Connects to a live K3s cluster (via the default kubeconfig, or
     kubeconfig_path if given — K3s writes its kubeconfig to
     /etc/rancher/k3s/k3s.yaml by default) and returns a component list in
-    the same shape MigrateGridOptimizer.load_blueprint expects.
+    the same shape CloudRouteOptimizer.load_blueprint expects.
     """
     if kubeconfig_path:
         config.load_kube_config(config_file=kubeconfig_path)

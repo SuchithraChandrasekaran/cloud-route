@@ -1,5 +1,5 @@
 """
-Grounding-check utilities for migrate-grid's Nemotron layer.
+Grounding-check utilities for cloud-route's Nemotron layer.
 
 The actual model-calling logic lives in orchestrator.py's Strands Agent
 (compute_migration_plan tool + system prompt). This module holds the

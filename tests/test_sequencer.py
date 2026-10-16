@@ -1,10 +1,10 @@
 import pytest
-from agent.engine import MigrateGridOptimizer
+from agent.engine import CloudRouteOptimizer
 from agent.mock_data import MOCK_MIGRATION_BLUEPRINT
 
 
 def test_cost_optimized_sequencing_orders_cheapest_first_within_a_generation():
-    optimizer = MigrateGridOptimizer()
+    optimizer = CloudRouteOptimizer()
     optimizer.load_blueprint(MOCK_MIGRATION_BLUEPRINT)
 
     phases, total_projected = optimizer.calculate_cost_optimized_sequence()
@@ -17,7 +17,7 @@ def test_cost_optimized_sequencing_orders_cheapest_first_within_a_generation():
 
 
 def test_returns_empty_on_cyclic_graph():
-    optimizer = MigrateGridOptimizer()
+    optimizer = CloudRouteOptimizer()
     optimizer.load_blueprint([
         {"id": "A", "daily_cost": 10, "dependencies": ["B"]},
         {"id": "B", "daily_cost": 10, "dependencies": ["A"]},
@@ -28,7 +28,7 @@ def test_returns_empty_on_cyclic_graph():
 
 
 def test_selective_blast_radius_rollback_isolates_only_downstream_components():
-    optimizer = MigrateGridOptimizer()
+    optimizer = CloudRouteOptimizer()
     optimizer.load_blueprint(MOCK_MIGRATION_BLUEPRINT)
 
     # If API-Gateway fails, only Public-Ingress (which depends on it) should
@@ -42,6 +42,6 @@ def test_selective_blast_radius_rollback_isolates_only_downstream_components():
 
 
 def test_blast_radius_on_unknown_component_returns_empty():
-    optimizer = MigrateGridOptimizer()
+    optimizer = CloudRouteOptimizer()
     optimizer.load_blueprint(MOCK_MIGRATION_BLUEPRINT)
     assert optimizer.compute_blast_radius_rollback("Nonexistent") == []

@@ -1,5 +1,5 @@
 """
-Main Strands Agent orchestrator for migrate-grid.
+Main Strands Agent orchestrator for cloud-route.
 
 Uses Strands' documented Nebius Token Factory integration: the underlying
 model is an NVIDIA Nemotron model served via Nebius, wired in through
@@ -25,7 +25,7 @@ import sys
 from strands import Agent, tool
 from strands.models.openai import OpenAIModel
 
-from agent.engine import MigrateGridOptimizer
+from agent.engine import CloudRouteOptimizer
 from agent.mock_data import MOCK_MIGRATION_BLUEPRINT
 from agent.nemotron_grounding import (
     find_unsupported_claims,
@@ -35,12 +35,12 @@ from agent.nemotron_grounding import (
 NEBIUS_BASE_URL = "https://api.tokenfactory.nebius.com/v1/"
 DEFAULT_MODEL_ID = "nvidia/nemotron-3-super-120b-a12b"
 
-# Set MIGRATE_GRID_DEBUG_LOGGERS=1 to print every logger name, which helps
+# Set CLOUD_ROUTE_DEBUG_LOGGERS=1 to print every logger name, which helps
 # if the reasoning notice ever comes from a logger not covered below.
-_DEBUG_LOGGERS = os.environ.get("MIGRATE_GRID_DEBUG_LOGGERS") == "1"
+_DEBUG_LOGGERS = os.environ.get("CLOUD_ROUTE_DEBUG_LOGGERS") == "1"
 
 SYSTEM_PROMPT = (
-    "You are migrate-grid's migration-planning assistant. You have a tool, "
+    "You are cloud-route's migration-planning assistant. You have a tool, "
     "compute_migration_plan, that returns the ONLY verified facts about a "
     "migration plan: its safe phases, its projected cost overhead, and "
     "whether it's a valid plan at all.\n\n"
@@ -91,7 +91,7 @@ ADJUSTMENT_NOTE = (
     "itself changes."
 )
 
-_active_optimizer: MigrateGridOptimizer | None = None
+_active_optimizer: CloudRouteOptimizer | None = None
 
 
 @tool
@@ -263,7 +263,7 @@ def _report_grounding(text: str, raw: dict) -> None:
 
 def _load_blueprint(source: str) -> None:
     global _active_optimizer
-    _active_optimizer = MigrateGridOptimizer()
+    _active_optimizer = CloudRouteOptimizer()
 
     if source == "mock":
         _active_optimizer.load_blueprint(MOCK_MIGRATION_BLUEPRINT)
@@ -372,7 +372,7 @@ def run(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="migrate-grid autonomous migration agent")
+    parser = argparse.ArgumentParser(description="cloud-route autonomous migration agent")
     parser.add_argument("--source", choices=["mock", "k3s"], default="mock")
     parser.add_argument("--explain", choices=["engineer", "pm", "client"], default=None)
     parser.add_argument("--replan", default=None, metavar="PRIORITY")
