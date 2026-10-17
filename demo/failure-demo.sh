@@ -49,4 +49,13 @@ kubectl rollout status deployment/credit-scoring --timeout=60s
 sleep 2
 loan
 echo
+pause
+
+echo "=== 5. The agent explains why loan-servicing has to wait"
+if [ -z "$NEBIUS_API_KEY" ]; then
+  echo "(skipped: NEBIUS_API_KEY is not set in this shell)"
+else
+  python -m agent.orchestrator --source k3s --ask "why is loan-servicing in the last phase?"
+fi
+echo
 echo "=== done"
