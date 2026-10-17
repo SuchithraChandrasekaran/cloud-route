@@ -1,184 +1,146 @@
 # cloud-route
 
-A zero-budget build to design, deploy, and operate a self-healing, self-observing cloud
-platform on AWS — culminating in an AI co-pilot that doesn't just explain problems, but
-proposes, and with explicit human approval, executes fixes.
+An agent that plans the safe order for moving interdependent services during an
+infrastructure migration, explains the plan to the people who have to approve it, and
+re-plans when priorities change.
 
-## What this actually is
+A deterministic graph engine decides every fact: the ordering, the cost estimate and the
+rollback scope. An NVIDIA Nemotron model, served through Nebius Token Factory, only explains
+and answers questions about those facts. It never decides, never invents, and never applies
+a change. It proposes, and a human approves.
 
-1. **A real single-account AWS foundation** — dev/staging/prod separated by naming
-   convention and tags, with IAM policies scoping access per environment.
-2. **Infrastructure as code** — Terraform modules for VPC, ECS/EKS, security groups, IAM.
-3. **A CI/CD pipeline** — GitHub Actions with security scanning (Trivy, Checkov) and a
-   manual production approval gate.
-4. **Container orchestration** — Docker → ECS Fargate → Kubernetes (Minikube/K3s, with a
-   short EKS verification window) with GitOps via ArgoCD.
-5. **Observability** — OpenTelemetry, Prometheus, Grafana, CloudWatch alarms.
-6. **A governance layer** — a RAID log (Risks, Assumptions, Issues, Dependencies) and an
-   environment-readiness tracker, feeding a small executive dashboard.
-7. **An AI co-pilot — the centerpiece** — a locally-run LLM (Ollama, free) that:
-   - turns raw pipeline and infra events into plain-English RAID entries,
-   - answers questions over the RAID log and readiness data via a local RAG index,
-   - scores deploy readiness (go / no-go) and is **evaluated** against manual judgment on
-     known scenarios — not just built, but measured,
-   - **proposes remediation actions** for detected problems (restart a crash-looping pod,
-     roll back a bad deploy) drawn from a fixed, pre-approved action list,
-   - requires a **human approval gate** before any fix executes — no unattended write access,
-   - is proven under **chaos testing**: pods are killed and latency is injected on purpose,
-     and the full loop — detect, explain, propose, approve, remediate, recover — is timed
-     and documented.
+Built for the Nebius x NVIDIA Global AI Hackathon (AI apps and agents).
+Model: nvidia/nemotron-3-super-120b-a12b.
 
-## Why this design
+## The problem
 
-We kept this simple on purpose. No random trendy tech just to sound cool. 
-It builds infrastructure that can notice when something's wrong and
-suggest a fix, but a real person always has to approve it before anything actually changes
+- **Sequencing risk.** Moving components in the wrong order breaks things. Most pre-deployment
+  checks look at one change at a time, not at a whole migration plan.
+- **Communication risk.** A correct plan is useless if the people who approve it cannot
+  follow it. Engineers, PMs and clients each need a different view of the same facts.
+- **Cost and blast-radius risk.** Components get double-billed across old and new
+  environments for longer than needed, and one failure can trigger an all-or-nothing rollback.
 
-## Zero-budget by design
+## How it works
 
-Everything runs on AWS free tier, a local install, or open-source software. Kubernetes runs
-on Minikube/K3s locally; EKS is used only for a short verification window and destroyed
-immediately after via `terraform destroy`. The AI co-pilot runs entirely on a local model
-(Ollama) — no hosted model API calls. Everything lives in a single AWS account, with
-dev/staging/prod separated by naming convention (`cloud-route-dev-*`, `-staging-*`,
-`-prod-*`) and an `Environment` tag on every resource, rather than separate accounts. A
-billing alarm is set at $1 from day one as a hard safety net.
+1. `agent/cluster_source.py` reads the live K3s cluster and builds a dependency graph.
+   Dependencies come from Service selectors and from an explicit annotation,
+   `cloud-route/depends-on`, on a Deployment.
+2. `agent/engine.py` validates the graph, orders it into safe phases (cheapest-first within a
+   phase) and computes a rough overhead heuristic.
+3. `agent/orchestrator.py` is a Strands agent. It has one tool, `compute_migration_plan`,
+   which returns the phases, the dependencies and the heuristic. That output is the only
+   source of facts the model may use. For anything else it says "the tool does not provide
+   that".
 
-## The remediation loop
+The agent has four modes:
 
-```
-Detect ──► Explain ──► Propose ──► Approve (human) ──► Remediate ──► Recover
-```
+- **explain**: the plan in plain language for an engineer, PM or client
+- **ask**: answers a question using only the tool output (for example, why a service is in
+  the last phase)
+- **replan**: proposes a parameter change when a priority changes
+- **propose-infra**: drafts a new infrastructure request, clearly labeled as a draft
 
-The AI co-pilot only ever proposes actions from a fixed, reviewed safe-action list. It never
-holds standing write access, and every remediation — even in a demo — requires an explicit
-human click before it executes. Chaos tests exercise this full loop end to end and the
-results (detection time, decision quality, recovery time) are logged, not just described.
+None of them applies anything. Every mode proposes or explains, and a human acts.
 
-## Architecture
+## Demo app: bank-easy
 
-```
-Synthetic app fleet (10-15 services)
-              │
-              ▼
-   ┌─────────────────────---┐         ┌──────────────────────-┐
-   │  Infrastructure layer  │         │   Governance layer    │
-   │                        │         │                       │
-   │  Terraform, single     │         │  Environment readiness│
-   │  AWS account, tag-     │         │  tracker              │
-   │  based env separation  │         │  Auto-generated RAID  │
-   │  K3s/Minikube + ArgoCD │         │  log                  │
-   │  GitOps deploys        │         │  Release gate         │
-   │  OpenTelemetry +       │         │  checklist            │
-   │  Prometheus + Grafana  │         │                       │
-   └──────────┬─────────────┘         └───────────┬───────────┘
-              │                                   |
-              └───────────────┬───────────────────┘
-                               ▼
-                     ┌──────────────────-─┐
-                     │    AI co-pilot     │
-                     │                    │
-                     │  Local LLM (Ollama)│
-                     │  RAID summarizer   │
-                     │  Readiness scorer  │
-                     │  (evaluated)       │
-                     │  RAG-based Q&A     │
-                     │  Remediation       │
-                     │  proposals + human │
-                     │  approval gate     │
-                     └─────────┬──────────┘
-                               ▼
-                  Executive dashboard
-                               │
-                               ▼
-                  Recruiters & hiring managers
-```
+A small banking system of seven services (Node/Express, in-memory data), containerized and
+deployed to K3s. The agent sequences it as a real system, not synthetic data.
 
-## Repo structure
+| Service | Port | Depends on |
+|---|---|---|
+| auth | 4001 | none |
+| account-ledger | 4002 | none |
+| payment-processing | 4003 | account-ledger |
+| credit-scoring | 4004 | none |
+| fraud-detection | 4005 | none |
+| loan-servicing | 4006 | account-ledger, credit-scoring |
+| notification | 4007 | none |
 
-```
-.
-├── terraform/
-│   ├── modules/            # VPC, ECS, EKS, IAM, ECR — reusable across environments
-│   └── environments/       # dev, staging, prod-specific configs
-├── apps/                   # Synthetic apps used to exercise the platform
-│   ├── api-service/
-│   ├── queue-worker/
-│   └── admin-ui/
-├── k8s/                    # Manifests, Ingress, ArgoCD app definitions
-├── pipeline/                # GitHub Actions workflows
-├── observability/           # Grafana dashboards, Prometheus config, OTel instrumentation
-├── governance/               # RAID log schema, readiness tracker, dashboard
-├── ai-copilot/               # The centerpiece
-│   ├── prompts/              # Summarization and scoring prompts
-│   ├── rag/                  # Local vector index over RAID log and runbooks
-│   ├── eval/                 # Scoring the AI against manual/human judgment
-│   └── remediation/          # Safe-action list, proposal logic, approval gate
-├── chaos/
-│   ├── scripts/               # Pod-kill and latency-injection scripts
-│   └── results/                # Logged detect-to-recover timings
-├── docs/
-│   ├── adr/                    # One Architecture Decision Record per phase
-│   └── architecture.md          # Full system diagram and write-up
-├── scripts/
-│   └── cleanup.sh                # One-command teardown for anything not free-tier
-├── cloud-route-daily-tasks.csv   # Day-by-day build tracker
-├── .gitignore
-├── LICENSE
-└── README.md
-```
+Loan-servicing is the service that breaks if the order is wrong. It cannot approve or pay out
+a loan without the ledger and credit scoring.
 
-## Tech stack
+## Failure demo
 
-- **Infrastructure**: Terraform, single AWS account with free-tier services (IAM, ECS/ECR), tag-based environment separation, K3s/Minikube, ArgoCD, Docker
-- **Observability**: OpenTelemetry, Prometheus, Grafana, CloudWatch (free tier)
-- **Governance**: DynamoDB (free tier), dashboard UI
-- **AI**: Ollama (Phi-3 / Mistral), FAISS or Chroma for local RAG — no hosted model API calls
-- **CI/CD**: GitHub Actions, Trivy, Checkov/TFLint
+    ./demo/failure-demo.sh
 
-## Ground rules
+Five scenes on the live cluster:
 
-- Every AWS resource that isn't explicitly free-tier gets destroyed right after its
-  verification window — `terraform destroy` as a one-command habit, not an afterthought.
-- A billing alarm is set at $1 in the account from day one.
-- The AI co-pilot only ever proposes actions from a fixed, reviewed safe-action list — it
-  never gets standing write access, and every remediation requires a human click to execute.
-- An ADR is written at the end of every phase, including what didn't work.
+1. The plan cloud-route computes for the cluster.
+2. A customer asks for a loan and it succeeds.
+3. Credit-scoring is taken down, as if migrated too early, and the same request fails with
+   "credit-scoring unreachable".
+4. Credit-scoring comes back and loans work again.
+5. The agent explains why loan-servicing has to wait for the services it depends on
+   (needs `NEBIUS_API_KEY`).
 
-## Project plan
+## Steps to run
 
-**Phase 1 — Infrastructure foundation** (Days 1-30)
-Single-account AWS setup with tag-based environment separation, Terraform state backend,
-VPC and networking modules, synthetic app containers, ECS deployment, and a full CI/CD
-pipeline with security scanning.
+Prerequisites: Python 3.10+, Node 20, Docker, K3s, and a Nebius Token Factory API key.
 
-**Phase 2 — Kubernetes and GitOps** (Days 31-45)
-Local K3s/Minikube cluster, Kubernetes manifests, ArgoCD GitOps sync, ingress routing, and a
-scheduled drift-detection check.
+    git clone https://github.com/SuchithraChandrasekaran/cloud-route
+    cd cloud-route
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip install -r requirements.txt
+    python -m pytest tests/ -q
 
-**Phase 3 — Observability** (Days 46-55)
-OpenTelemetry instrumentation, Prometheus and Grafana dashboards, centralized logging, and
-alerting through CloudWatch.
+Build the bank-easy images, load them into K3s and deploy:
 
-**Phase 4 — Governance layer** (Days 56-71)
-RAID log schema and storage, environment readiness tracker, release gate checklist logic,
-and a dashboard tying it all together.
+    cd bank-easy
+    for entry in auth-service:auth account-ledger-service:account-ledger payment-processing-service:payment-processing credit-scoring-service:credit-scoring fraud-detection-service:fraud-detection loan-servicing-service:loan-servicing notification-service:notification; do
+      docker build -q -t bank-easy/${entry##*:}:v1 ${entry%%:*}
+      docker save bank-easy/${entry##*:}:v1 | sudo k3s ctr images import -
+    done
+    cd ..
+    kubectl apply -f k8s/bank-easy.yaml
 
-**Phase 5 — AI co-pilot and release** (Days 72-90)
-Local LLM setup, event summarization, an evaluated readiness scorer, local RAG-based Q&A,
-remediation proposals with a human approval gate, chaos testing with logged recovery
-numbers, and final documentation and publishing.
+Plan the migration:
 
+    python -m agent.orchestrator --source k3s
+    export NEBIUS_API_KEY=your_key_here
+    python -m agent.orchestrator --source k3s --explain engineer
+    python -m agent.orchestrator --source k3s --ask "why is loan-servicing in the last phase?"
+    python -m agent.orchestrator --source k3s --replan "prioritize downtime over cost"
+    python -m agent.orchestrator --source k3s --propose-infra "a staging database connected to monitoring"
 
-## Architecture Decision Records
+Use `--source mock` to run against a small built-in graph without a cluster.
 
-- [ ] ADR 01: CI/CD pipeline design
-- [ ] ADR 02: GitOps over imperative deploys
-- [ ] ADR 03: Observability stack choices
-- [ ] ADR 04: Governance data model
-- [ ] ADR 05: AI co-pilot design — why local, why a fixed action list, why a human gate
+## Status
 
-## Chaos testing results
+Working now:
 
-Detect-to-recover timings for the full remediation loop, logged honestly once tests are run.
+- Deterministic engine, with tests
+- Live K3s graph extraction, including the dependency annotation
+- All four agent modes against the live cluster
+- Seven bank-easy services, containerized and deployed
+- The scripted failure demo
+
+Planned, not built yet:
+
+- Full evaluation on a bank-easy-based dataset, plus a large synthetic test set
+- Retrieval layer over failure-mode documentation
+- Security scan and data-residency flagging
+- Cluster resource recommendations
+- Persistent storage and a small frontend for bank-easy
+
+## Known issues
+
+Found during live runs and listed in `docs/ISSUES.md`.
+
+Dependency inference is a heuristic. A service that calls another through an environment
+variable is only visible to the agent if its Deployment declares the dependency with the
+`cloud-route/depends-on` annotation.
+
+## Repo layout
+
+    agent/         engine, cluster reader and the Nemotron agent
+    bank-easy/     the seven demo services, each with a Dockerfile
+    k8s/           Kubernetes manifests for bank-easy
+    demo/          the scripted failure demo
+    docs/          known issues
+    tests/         unit tests
+    daily-logs/    build log
+
 
