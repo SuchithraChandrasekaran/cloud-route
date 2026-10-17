@@ -102,6 +102,11 @@ def load_blueprint_from_cluster(namespace: str = "default", kubeconfig_path: str
                 matches.append(svc_name)
         return matches
 
+    def declared_dependencies(annotations) -> List[str]:
+        # Optional explicit declaration: cloud-route/depends-on: a,b
+        raw = (annotations or {}).get("cloud-route/depends-on", "")
+        return [f"deployment/{n.strip()}" for n in raw.split(",") if n.strip()]
+
     # Services themselves have no workload dependency (they're the target
     # other things depend on), but they're still nodes in the graph.
     for svc in services:
@@ -119,7 +124,8 @@ def load_blueprint_from_cluster(namespace: str = "default", kubeconfig_path: str
             "id": f"deployment/{dep.metadata.name}",
             "type": "Deployment",
             "daily_cost": _daily_cost_estimate(cpu, mem),
-            "dependencies": [f"service/{s}" for s in matching_services(pod_labels)],
+            "dependencies": [f"service/{s}" for s in matching_services(pod_labels)]
+            + declared_dependencies(dep.metadata.annotations),
         })
 
     for sts in statefulsets:
