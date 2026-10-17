@@ -301,7 +301,11 @@ def run(
     ask_question: str | None = None,
     propose_infra_request: str | None = None,
 ) -> None:
-    _load_blueprint(source)
+    try:
+        _load_blueprint(source)
+    except ValueError as err:
+        print(f"Cannot build a migration plan: {err}")
+        return
 
     raw = compute_migration_plan()
     if not raw.get("phases"):

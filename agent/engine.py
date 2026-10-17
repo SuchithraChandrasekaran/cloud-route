@@ -24,6 +24,16 @@ class CloudRouteOptimizer:
 
     def load_blueprint(self, components: List[Dict[str, Any]]) -> None:
         """Loads infrastructure components, pairing topology with daily run-costs."""
+        known_ids = {comp["id"] for comp in components}
+        for comp in components:
+            for dep in comp.get("dependencies", []):
+                if dep not in known_ids and dep not in self.graph:
+                    raise ValueError(
+                        f"{comp['id']} depends on unknown component {dep}. "
+                        f"Check the name (for example a typo in a "
+                        f"cloud-route/depends-on annotation)."
+                    )
+
         for comp in components:
             self.graph.add_node(
                 comp["id"],
