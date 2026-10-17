@@ -43,7 +43,9 @@ class CloudRouteOptimizer:
             for dep in comp.get("dependencies", []):
                 self.graph.add_edge(dep, comp["id"])
 
-    def calculate_cost_optimized_sequence(self) -> Tuple[List[List[str]], float]:
+    def calculate_cost_optimized_sequence(
+        self, max_batch_size: int | None = None
+    ) -> Tuple[List[List[str]], float]:
         """
         Groups components into safe topological generations (each generation
         is only reachable once everything in prior generations is done), then
@@ -51,23 +53,43 @@ class CloudRouteOptimizer:
         expensive components spend the least possible time double-billed
         across old and new environments.
 
-        Returns ([] , 0.0) if the graph isn't a valid DAG — that's the signal
+        max_batch_size (optional) caps how many components migrate in the
+        same phase. A generation larger than the cap is split into
+        consecutive smaller phases, keeping the cheapest-first order. This
+        never breaks dependency order, because components in one generation
+        do not depend on each other. None means no cap.
+
+        Returns ([] , 0.0) if the graph isn't a valid DAG - that's the signal
         the caller should treat as "unsafe to sequence, resolve the cycle first."
         """
+        if max_batch_size is not None and (
+            isinstance(max_batch_size, bool)
+            or not isinstance(max_batch_size, int)
+            or max_batch_size < 1
+        ):
+            raise ValueError("max_batch_size must be a positive integer or None")
+
         if not nx.is_directed_acyclic_graph(self.graph):
             return [], 0.0
 
-        raw_generations = list(nx.topological_generations(self.graph))
-        optimized_phases = []
+        optimized_phases: List[List[str]] = []
+        for generation in nx.topological_generations(self.graph):
+            sorted_gen = sorted(
+                generation, key=lambda node: self.graph.nodes[node]["daily_cost"]
+            )
+            if max_batch_size is None:
+                optimized_phases.append(sorted_gen)
+            else:
+                for start in range(0, len(sorted_gen), max_batch_size):
+                    optimized_phases.append(sorted_gen[start:start + max_batch_size])
+
+        # Heuristic proxy only - see module docstring. Phase cost is weighted
+        # by how many phases remain, so more (smaller) phases score higher.
+        total_phases = len(optimized_phases)
         projected_parallel_overhead = 0.0
-
-        for i, generation in enumerate(raw_generations):
-            sorted_gen = sorted(generation, key=lambda node: self.graph.nodes[node]["daily_cost"])
-            optimized_phases.append(sorted_gen)
-
-            # Heuristic proxy only — see module docstring.
-            generation_cost = sum(self.graph.nodes[node]["daily_cost"] for node in sorted_gen)
-            projected_parallel_overhead += generation_cost * (len(raw_generations) - i)
+        for i, phase in enumerate(optimized_phases):
+            phase_cost = sum(self.graph.nodes[node]["daily_cost"] for node in phase)
+            projected_parallel_overhead += phase_cost * (total_phases - i)
 
         return optimized_phases, projected_parallel_overhead
 

@@ -54,7 +54,8 @@ SYSTEM_PROMPT = (
     "3. Describe the overhead number only using the tool's "
     "heuristic_definition, and nothing more. Do not name or list any "
     "factors, causes or contributors to it, not even to rule them out.\n"
-    "4. Do not predict the effect of changing the plan. You may explain "
+    "4. Do not predict the effect of changing the plan, except by quoting "
+    "the tool's batch_size_comparison. You may explain "
     "why a component sits in a later phase ONLY by naming the dependencies "
     "the tool returns for it, and by saying a component is migrated after "
     "the components it depends on. For any other 'why' question, or what "
@@ -88,11 +89,24 @@ ORDERING_NOTE = (
     "costs are not exposed by this tool."
 )
 
+ADJUSTABLE_PARAMETERS = [
+    {
+        "name": "max_batch_size",
+        "allowed_values": "a positive integer, or no cap (the default)",
+        "meaning": (
+            "Caps how many components migrate in the same phase. A smaller "
+            "cap splits a phase into more, smaller phases that run one "
+            "after another."
+        ),
+    }
+]
 ADJUSTMENT_NOTE = (
-    "The engine currently exposes no adjustable parameters, so no parameter "
-    "change can be proposed. The plan only changes if the component graph "
-    "itself changes."
+    "max_batch_size is the only adjustable parameter. batch_size_comparison "
+    "lists the engine's real result for several values. Use only those "
+    "numbers, and do not claim any figure for downtime or risk."
 )
+BATCH_SIZES_TO_COMPARE = [None, 3, 2, 1]
+
 
 DEPENDENCY_NOTE = (
     "Each component is migrated only after the components it depends on. "
@@ -105,12 +119,29 @@ _active_optimizer: CloudRouteOptimizer | None = None
 _active_blueprint: list | None = None
 
 
+def _batch_size_comparison() -> list:
+    """Real engine results for several max_batch_size values."""
+    rows = []
+    for size in BATCH_SIZES_TO_COMPARE:
+        phases, overhead = _active_optimizer.calculate_cost_optimized_sequence(size)
+        rows.append({
+            "max_batch_size": size if size is not None else "no cap",
+            "phase_count": len(phases),
+            "projected_parallel_overhead_heuristic": overhead,
+        })
+    return rows
+
+
 @tool
-def compute_migration_plan() -> dict:
+def compute_migration_plan(max_batch_size: int | None = None) -> dict:
     """
     Runs the deterministic migration engine and returns its real output:
     safe migration phases (cost-ordered within each phase) and the
     projected parallel-cost overhead heuristic.
+
+    Args:
+        max_batch_size: Optional cap on how many components migrate in the
+            same phase. Leave unset for the default plan with no cap.
 
     Returns:
         A dictionary with keys "phases" (list of lists of component names,
@@ -119,7 +150,8 @@ def compute_migration_plan() -> dict:
         "heuristic_definition" (the only permitted description of that
         number), "ordering_note" (the only permitted description of the
         ordering within phases), "adjustable_parameters" (the only
-        parameters a re-plan may propose changing; currently empty) and
+        parameters a re-plan may propose changing), "batch_size_comparison"
+        (real engine results for several values of max_batch_size) and
         "adjustment_note", "dependencies" (a map from a component to the
         components it depends on, only for components that have any) and
         "dependency_note".
@@ -127,7 +159,12 @@ def compute_migration_plan() -> dict:
     if _active_optimizer is None:
         return {"error": "No blueprint loaded."}
 
-    phases, overhead = _active_optimizer.calculate_cost_optimized_sequence()
+    try:
+        phases, overhead = _active_optimizer.calculate_cost_optimized_sequence(
+            max_batch_size
+        )
+    except ValueError as err:
+        return {"error": str(err)}
     if not phases:
         return {
             "phases": [],
@@ -140,8 +177,10 @@ def compute_migration_plan() -> dict:
         "projected_parallel_overhead_heuristic": overhead,
         "heuristic_definition": HEURISTIC_DEFINITION,
         "ordering_note": ORDERING_NOTE,
-        "adjustable_parameters": [],
+        "applied_max_batch_size": max_batch_size,
+        "adjustable_parameters": ADJUSTABLE_PARAMETERS,
         "adjustment_note": ADJUSTMENT_NOTE,
+        "batch_size_comparison": _batch_size_comparison(),
         "dependencies": {
             c["id"]: list(c.get("dependencies") or [])
             for c in (_active_blueprint or [])
@@ -350,16 +389,25 @@ def run(
 
     if replan_priority:
         prompt = (
-            f"Call compute_migration_plan to see the current plan and its "
-            f"adjustable_parameters. The user's stated priority is: "
-            f"\"{replan_priority}\". You may only propose a change to a "
-            f"parameter listed in adjustable_parameters. If that list is "
-            f"empty, do not invent a parameter: respond with the JSON object "
+            f"Call compute_migration_plan to see the current plan, its "
+            f"adjustable_parameters and its batch_size_comparison. The "
+            f"user's stated priority is: \"{replan_priority}\". You may "
+            f"only propose a change to a parameter listed in "
+            f"adjustable_parameters, and every number you quote must come "
+            f"from batch_size_comparison. max_batch_size caps how many "
+            f"components migrate in one phase: no cap gives the fewest, "
+            f"largest phases; smaller caps give more, smaller phases, so "
+            f"fewer components change at once. Pick the entry that best "
+            f"fits the priority. Do not claim any figure for downtime or "
+            f"risk; the tool provides none. If the priority has nothing to "
+            f"do with batch size, respond with the JSON object "
             f"{{\"parameter\": null, \"proposed_value\": null, "
-            f"\"rationale\": \"...\"}} where the rationale says, using the "
-            f"tool's adjustment_note, why no parameter change is possible. "
-            f"Otherwise respond with a short JSON object: parameter, "
-            f"proposed_value, rationale. Either way, make clear this is a "
+            f"\"rationale\": \"...\"}} and say why in the rationale. "
+            f"Otherwise respond with a short JSON object: parameter "
+            f"(max_batch_size), proposed_value (a positive integer, or the "
+            f"string \"no cap\"), rationale (quote the phase_count and "
+            f"overhead from batch_size_comparison for your choice and for "
+            f"the current plan). Either way, make clear this is a "
             f"proposal, not an applied change."
         )
         response = _ask_agent(agent, prompt)
