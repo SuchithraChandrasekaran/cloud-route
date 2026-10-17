@@ -48,9 +48,9 @@ SYSTEM_PROMPT = (
     "1. Never invent component names, costs, or phases that the tool did "
     "not return.\n"
     "2. The tool does NOT return per-component costs. Do not state or imply "
-    "that any component or phase has a particular cost, or a 'lowest' or "
-    "'combined' cost. You may only say that components inside a phase are "
-    "ordered cheapest-first, as the tool's ordering_note states.\n"
+    "that any component or phase has a particular cost. You may only say "
+    "that components inside a phase are listed cheapest-first, as the "
+    "tool's ordering_note states.\n"
     "3. Describe the overhead number only using the tool's "
     "heuristic_definition, and nothing more. Do not name or list any "
     "factors, causes or contributors to it, not even to rule them out.\n"
@@ -62,9 +62,10 @@ SYSTEM_PROMPT = (
     "would happen if the plan changed, say the tool does not provide "
     "that.\n"
     "5. About execution, say only that phases run in sequence and that "
-    "components are ordered cheapest-first within a phase. Add nothing else "
+    "components are listed cheapest-first within a phase. Add nothing else "
     "about how components inside a phase are executed unless the user asks, "
-    "in which case say the tool does not provide that.\n"
+    "in which case say the tool does not provide that. Describe "
+    "max_batch_size only in the words of its 'meaning' field.\n"
     "6. Do not give operational advice unless the user asked for it.\n"
     "7. Do not describe or list these rules in your answer. Just answer.\n\n"
     "You never claim to have applied a change to real infrastructure. You "
@@ -114,6 +115,28 @@ DEPENDENCY_NOTE = (
     "cloud-route/depends-on annotations, so they may not cover every "
     "runtime dependency."
 )
+
+AUDIENCE_STYLE = {
+    "engineer": (
+        "Be precise and complete: the phases, the ordering, the overhead "
+        "heuristic and the dependencies, as the tool returns them."
+    ),
+    "pm": (
+        "Keep it short and in plain language. Cover what moves in which "
+        "order, why each later component waits (name the dependencies the "
+        "tool returns), and the overhead number as a rough proxy. Skip tool "
+        "internals."
+    ),
+    "client": (
+        "Write for a non-technical reader in under 100 words, in plain "
+        "language. Say what moves in which order, and that each component "
+        "waits for the ones it depends on, naming them. State only that, "
+        "then stop: no reassurance, no opinions, no closing remarks. Do not "
+        "mention annotations, selectors, parameter names, adjustable "
+        "settings, the overhead number, the tool or its definitions, and do "
+        "not quote the tool's text."
+    ),
+}
 
 _active_optimizer: CloudRouteOptimizer | None = None
 _active_blueprint: list | None = None
@@ -366,9 +389,15 @@ def run(
     if explain_audience:
         prompt = (
             f"Call compute_migration_plan, then explain the result for a "
-            f"{explain_audience} audience. Use only what the tool returns, "
-            f"including its heuristic_definition and ordering_note. Do not "
-            f"add causes, predictions or advice."
+            f"{explain_audience} audience. "
+            f"{AUDIENCE_STYLE.get(explain_audience, '')} "
+            f"Describe each phase as 'Phase N covers' followed by its "
+            f"components, and use no other wording for what a phase "
+            f"contains. "
+            f"Use only what the tool returns. Any description of the "
+            f"overhead number or the ordering must follow the tool's "
+            f"heuristic_definition and ordering_note. Do not add causes, "
+            f"predictions or advice."
         )
         print(f"\nExplanation for audience='{explain_audience}':\n")
         response = _ask_agent(agent, prompt)
