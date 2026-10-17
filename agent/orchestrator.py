@@ -54,9 +54,12 @@ SYSTEM_PROMPT = (
     "3. Describe the overhead number only using the tool's "
     "heuristic_definition, and nothing more. Do not name or list any "
     "factors, causes or contributors to it, not even to rule them out.\n"
-    "4. Do not predict the effect of changing the plan. If asked why "
-    "something is the way it is, or what would happen if the plan changed, "
-    "say the tool does not provide that.\n"
+    "4. Do not predict the effect of changing the plan. You may explain "
+    "why a component sits in a later phase ONLY by naming the dependencies "
+    "the tool returns for it, and by saying a component is migrated after "
+    "the components it depends on. For any other 'why' question, or what "
+    "would happen if the plan changed, say the tool does not provide "
+    "that.\n"
     "5. About execution, say only that phases run in sequence and that "
     "components are ordered cheapest-first within a phase. Add nothing else "
     "about how components inside a phase are executed unless the user asks, "
@@ -91,7 +94,15 @@ ADJUSTMENT_NOTE = (
     "itself changes."
 )
 
+DEPENDENCY_NOTE = (
+    "Each component is migrated only after the components it depends on. "
+    "Dependencies come from the cluster's Service selectors and "
+    "cloud-route/depends-on annotations, so they may not cover every "
+    "runtime dependency."
+)
+
 _active_optimizer: CloudRouteOptimizer | None = None
+_active_blueprint: list | None = None
 
 
 @tool
@@ -109,7 +120,9 @@ def compute_migration_plan() -> dict:
         number), "ordering_note" (the only permitted description of the
         ordering within phases), "adjustable_parameters" (the only
         parameters a re-plan may propose changing; currently empty) and
-        "adjustment_note".
+        "adjustment_note", "dependencies" (a map from a component to the
+        components it depends on, only for components that have any) and
+        "dependency_note".
     """
     if _active_optimizer is None:
         return {"error": "No blueprint loaded."}
@@ -129,6 +142,12 @@ def compute_migration_plan() -> dict:
         "ordering_note": ORDERING_NOTE,
         "adjustable_parameters": [],
         "adjustment_note": ADJUSTMENT_NOTE,
+        "dependencies": {
+            c["id"]: list(c.get("dependencies") or [])
+            for c in (_active_blueprint or [])
+            if c.get("dependencies")
+        },
+        "dependency_note": DEPENDENCY_NOTE,
     }
 
 
@@ -262,16 +281,17 @@ def _report_grounding(text: str, raw: dict) -> None:
 # --------------------------------------------------------------------------
 
 def _load_blueprint(source: str) -> None:
-    global _active_optimizer
+    global _active_optimizer, _active_blueprint
     _active_optimizer = CloudRouteOptimizer()
 
     if source == "mock":
-        _active_optimizer.load_blueprint(MOCK_MIGRATION_BLUEPRINT)
+        _active_blueprint = MOCK_MIGRATION_BLUEPRINT
     elif source == "k3s":
         from agent.cluster_source import load_blueprint_from_cluster
-        _active_optimizer.load_blueprint(load_blueprint_from_cluster())
+        _active_blueprint = load_blueprint_from_cluster()
     else:
         raise ValueError(f"Unknown source: {source}")
+    _active_optimizer.load_blueprint(_active_blueprint)
 
 
 def run(
