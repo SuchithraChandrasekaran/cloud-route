@@ -1,0 +1,277 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+  labels:
+    app: auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+      - name: auth
+        image: bank-easy/auth:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 4001
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth
+spec:
+  selector:
+    app: auth
+  ports:
+  - port: 4001
+    targetPort: 4001
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: account-ledger
+  labels:
+    app: account-ledger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: account-ledger
+  template:
+    metadata:
+      labels:
+        app: account-ledger
+    spec:
+      containers:
+      - name: account-ledger
+        image: bank-easy/account-ledger:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 4002
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: account-ledger
+spec:
+  selector:
+    app: account-ledger
+  ports:
+  - port: 4002
+    targetPort: 4002
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-processing
+  labels:
+    app: payment-processing
+  annotations:
+    cloud-route/depends-on: "account-ledger"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-processing
+  template:
+    metadata:
+      labels:
+        app: payment-processing
+    spec:
+      containers:
+      - name: payment-processing
+        image: bank-easy/payment-processing:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 4003
+        env:
+        - name: LEDGER_URL
+          value: "http://account-ledger:4002"
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-processing
+spec:
+  selector:
+    app: payment-processing
+  ports:
+  - port: 4003
+    targetPort: 4003
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: credit-scoring
+  labels:
+    app: credit-scoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: credit-scoring
+  template:
+    metadata:
+      labels:
+        app: credit-scoring
+    spec:
+      containers:
+      - name: credit-scoring
+        image: bank-easy/credit-scoring:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 4004
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: credit-scoring
+spec:
+  selector:
+    app: credit-scoring
+  ports:
+  - port: 4004
+    targetPort: 4004
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fraud-detection
+  labels:
+    app: fraud-detection
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fraud-detection
+  template:
+    metadata:
+      labels:
+        app: fraud-detection
+    spec:
+      containers:
+      - name: fraud-detection
+        image: bank-easy/fraud-detection:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 4005
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fraud-detection
+spec:
+  selector:
+    app: fraud-detection
+  ports:
+  - port: 4005
+    targetPort: 4005
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loan-servicing
+  labels:
+    app: loan-servicing
+  annotations:
+    cloud-route/depends-on: "account-ledger,credit-scoring"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loan-servicing
+  template:
+    metadata:
+      labels:
+        app: loan-servicing
+    spec:
+      containers:
+      - name: loan-servicing
+        image: bank-easy/loan-servicing:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 4006
+        env:
+        - name: LEDGER_URL
+          value: "http://account-ledger:4002"
+        - name: SCORING_URL
+          value: "http://credit-scoring:4004"
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loan-servicing
+spec:
+  selector:
+    app: loan-servicing
+  ports:
+  - port: 4006
+    targetPort: 4006
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification
+  labels:
+    app: notification
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification
+  template:
+    metadata:
+      labels:
+        app: notification
+    spec:
+      containers:
+      - name: notification
+        image: bank-easy/notification:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 4007
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification
+spec:
+  selector:
+    app: notification
+  ports:
+  - port: 4007
+    targetPort: 4007
