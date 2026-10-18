@@ -9,11 +9,13 @@ def test_cost_optimized_sequencing_orders_cheapest_first_within_a_generation():
 
     phases, total_projected = optimizer.calculate_cost_optimized_sequence()
 
-    assert len(phases) > 0
-    # Generation 0 has no dependencies: Core-Database ($450) and Auth-Service
-    # ($45). Auth-Service should sequence first to reduce its overlap time.
-    assert phases[0][0] == "Auth-Service"
-    assert phases[0][1] == "Core-Database"
+    assert len(phases) == 2
+    # Phase 1 has no dependencies, so it is ordered purely by cost.
+    assert phases[0] == [
+        "notification", "auth", "fraud-detection", "credit-scoring", "account-ledger",
+    ]
+    # Phase 2 needs account-ledger (and credit-scoring) to move first.
+    assert phases[1] == ["payment-processing", "loan-servicing"]
 
 
 def test_returns_empty_on_cyclic_graph():
@@ -31,14 +33,15 @@ def test_selective_blast_radius_rollback_isolates_only_downstream_components():
     optimizer = CloudRouteOptimizer()
     optimizer.load_blueprint(MOCK_MIGRATION_BLUEPRINT)
 
-    # If API-Gateway fails, only Public-Ingress (which depends on it) should
-    # be affected. Core-Database and Auth-Service are upstream and must stay.
-    rollback_plan = optimizer.compute_blast_radius_rollback("API-Gateway")
+    # If credit-scoring fails, only loan-servicing (which depends on it) is
+    # affected. Its siblings and the ledger must stay.
+    rollback_plan = optimizer.compute_blast_radius_rollback("credit-scoring")
 
-    assert "API-Gateway" in rollback_plan
-    assert "Public-Ingress" in rollback_plan
-    assert "Core-Database" not in rollback_plan
-    assert "Auth-Service" not in rollback_plan
+    assert "credit-scoring" in rollback_plan
+    assert "loan-servicing" in rollback_plan
+    assert "account-ledger" not in rollback_plan
+    assert "payment-processing" not in rollback_plan
+    assert "auth" not in rollback_plan
 
 
 def test_blast_radius_on_unknown_component_returns_empty():
