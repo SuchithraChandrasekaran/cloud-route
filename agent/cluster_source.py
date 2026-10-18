@@ -110,6 +110,9 @@ def load_blueprint_from_cluster(namespace: str = "default", kubeconfig_path: str
     # Services themselves have no workload dependency (they're the target
     # other things depend on), but they're still nodes in the graph.
     for svc in services:
+        # The API server's own Service: no selector, not part of the app.
+        if svc.metadata.name == "kubernetes" and not svc.spec.selector:
+            continue
         components.append({
             "id": f"service/{svc.metadata.name}",
             "type": "Service",
