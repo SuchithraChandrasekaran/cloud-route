@@ -102,10 +102,19 @@ def load_blueprint_from_cluster(namespace: str = "default", kubeconfig_path: str
                 matches.append(svc_name)
         return matches
 
+    workload_ids = {}
+    for w in statefulsets:
+        workload_ids[w.metadata.name] = f"statefulset/{w.metadata.name}"
+    for w in deployments:  # a Deployment wins if both kinds share a name
+        workload_ids[w.metadata.name] = f"deployment/{w.metadata.name}"
+
     def declared_dependencies(annotations) -> List[str]:
         # Optional explicit declaration: cloud-route/depends-on: a,b
+        # Each name resolves to the Deployment or StatefulSet with that name.
+        # An unknown name is kept as deployment/<name> so the engine reports it.
         raw = (annotations or {}).get("cloud-route/depends-on", "")
-        return [f"deployment/{n.strip()}" for n in raw.split(",") if n.strip()]
+        names = [n.strip() for n in raw.split(",") if n.strip()]
+        return [workload_ids.get(n, f"deployment/{n}") for n in names]
 
     # Services themselves have no workload dependency (they're the target
     # other things depend on), but they're still nodes in the graph.
@@ -139,6 +148,7 @@ def load_blueprint_from_cluster(namespace: str = "default", kubeconfig_path: str
             governing = f"service/{sts.spec.service_name}"
             if governing not in deps:
                 deps.append(governing)
+        deps += declared_dependencies(sts.metadata.annotations)
         components.append({
             "id": f"statefulset/{sts.metadata.name}",
             "type": "StatefulSet",
