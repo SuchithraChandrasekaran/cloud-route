@@ -26,6 +26,8 @@ from strands import Agent, tool
 from strands.models.openai import OpenAIModel
 
 from agent.engine import CloudRouteOptimizer
+import json
+import re
 from agent.mock_data import MOCK_MIGRATION_BLUEPRINT
 from agent.nemotron_grounding import (
     find_unsupported_claims,
@@ -356,6 +358,29 @@ def _load_blueprint(source: str) -> None:
     _active_optimizer.load_blueprint(_active_blueprint)
 
 
+def _parse_proposed_cap(response: str):
+    """Reads proposed_value from the model's JSON reply.
+
+    Returns (True, value): value is a positive int, or None for "no cap".
+    Returns (False, None) if the proposal cannot be read safely.
+    """
+    match = re.search(r"\{.*\}", response, re.DOTALL)
+    if not match:
+        return False, None
+    try:
+        proposal = json.loads(match.group(0))
+    except ValueError:
+        return False, None
+    if not isinstance(proposal, dict) or proposal.get("parameter") != "max_batch_size":
+        return False, None
+    value = proposal.get("proposed_value")
+    if isinstance(value, str) and value.strip().lower() == "no cap":
+        return True, None
+    if isinstance(value, int) and not isinstance(value, bool) and value > 0:
+        return True, value
+    return False, None
+
+
 def run(
     source: str,
     explain_audience: str | None,
@@ -448,13 +473,29 @@ def run(
             print("\nNo applicable parameter, so there is nothing to approve. "
                   "No changes made.")
         else:
-            answer = input("\nApprove this proposal? Re-running is not yet "
-                           "implemented in this build. [y/N]: ").strip().lower()
-            if answer == "y":
-                print("Applying an approved re-plan is not implemented yet — "
-                      "no proposal has been validated in testing.")
+            ok, cap = _parse_proposed_cap(response)
+            if not ok:
+                print("\nThe proposal could not be read safely, so it cannot "
+                      "be applied. No changes made.")
             else:
-                print("Not applied. No changes made.")
+                label = "no cap" if cap is None else f"max_batch_size = {cap}"
+                answer = input(f"\nApprove {label} and recompute the plan? "
+                               f"[y/N]: ").strip().lower()
+                if answer == "y":
+                    new_plan = compute_migration_plan(max_batch_size=cap)
+                    if not new_plan.get("phases"):
+                        print(new_plan.get("note",
+                                           "The plan could not be recomputed."))
+                    else:
+                        print(f"\nRecomputed plan with {label}:")
+                        for i, phase in enumerate(new_plan["phases"]):
+                            print(f"  Phase {i + 1}: {phase}")
+                        print(f"  Projected parallel-cost overhead (heuristic): "
+                              f"{new_plan['projected_parallel_overhead_heuristic']:.2f}")
+                        print("This is a recomputed plan only. Nothing in the "
+                              "cluster has been changed.")
+                else:
+                    print("Not applied. No changes made.")
 
     if propose_infra_request:
         prompt = (
