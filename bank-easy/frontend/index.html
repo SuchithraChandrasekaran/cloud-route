@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>bank-easy</title>
+<style>
+  :root { --bg:#f4f6fa; --card:#fff; --ink:#18202e; --muted:#5b6678; --line:#d9dfe9; --accent:#1d4ed8; --bad:#b42318; --good:#067647; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#10141c; --card:#182030; --ink:#e8edf6; --muted:#9aa6bb; --line:#2a3548; --accent:#6b9bff; --bad:#ff8a80; --good:#5fd39a; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.45 system-ui, sans-serif; }
+  main { max-width:760px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { margin:0 0 4px; font-size:1.5rem; }
+  .sub { color:var(--muted); margin:0 0 20px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:16px; }
+  h2 { margin:0 0 10px; font-size:1.05rem; }
+  label { display:block; font-size:.85rem; color:var(--muted); margin:8px 0 2px; }
+  input { width:100%; padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); font:inherit; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; }
+  .row > * { flex:1 1 140px; }
+  button { margin-top:12px; padding:9px 14px; border:0; border-radius:8px; background:var(--accent); color:#fff; font:inherit; cursor:pointer; }
+  button.alt { background:transparent; color:var(--accent); border:1px solid var(--accent); margin-left:6px; }
+  .msg { margin-top:10px; padding:9px 11px; border-radius:8px; border:1px solid var(--line); min-height:1.2em; font-size:.92rem; }
+  .msg.bad { color:var(--bad); border-color:var(--bad); }
+  .msg.good { color:var(--good); border-color:var(--good); }
+  .balance { font-size:1.8rem; font-weight:600; }
+  .mono { font-family:ui-monospace, monospace; font-size:.8rem; color:var(--muted); word-break:break-all; }
+</style>
+</head>
+<body>
+<main>
+  <h1>bank-easy</h1>
+  <p class="sub">Demo front end for the cloud-route test system. Amounts are in dollars; the services store cents.</p>
+
+  <section class="card" id="auth">
+    <h2>1. Sign in</h2>
+    <div class="row">
+      <div><label for="email">Email</label><input id="email" type="email" value="demo@bank.test"></div>
+      <div><label for="pw">Password</label><input id="pw" type="password" value="demo-pass-1"></div>
+    </div>
+    <button id="signup">Sign up</button><button id="login" class="alt">Log in</button>
+    <div class="msg" id="authMsg"></div>
+  </section>
+
+  <section class="card">
+    <h2>2. Account</h2>
+    <div class="balance" id="balance">-</div>
+    <div class="mono" id="acctId">no account yet</div>
+    <div class="row">
+      <div><label for="dep">Deposit ($)</label><input id="dep" type="number" min="1" step="1" value="500"></div>
+    </div>
+    <button id="deposit">Deposit</button><button id="refresh" class="alt">Refresh balance</button><button id="seed" class="alt">Load sample history</button>
+    <div class="msg" id="acctMsg"></div>
+  </section>
+
+  <section class="card">
+    <h2>3. Pay</h2>
+    <div class="row">
+      <div><label for="to">Recipient account id</label><input id="to" placeholder="paste an account id"></div>
+      <div><label for="payAmt">Amount ($)</label><input id="payAmt" type="number" min="1" step="1" value="25"></div>
+    </div>
+    <button id="pay">Send payment</button><button id="payee" class="alt">Create a demo payee</button>
+    <div class="msg" id="payMsg"></div>
+  </section>
+
+  <section class="card">
+    <h2>4. Request a loan</h2>
+    <div class="row">
+      <div><label for="loanAmt">Amount ($)</label><input id="loanAmt" type="number" min="1" step="1" value="1000"></div>
+      <div><label for="term">Term (months, 1 to 60)</label><input id="term" type="number" min="1" max="60" step="1" value="12"></div>
+    </div>
+    <button id="loan">Request loan</button>
+    <div class="msg" id="loanMsg"></div>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const state = { token: null, accountId: null };
+try { state.accountId = localStorage.getItem('accountId'); } catch (e) {}
+
+const dollars = (c) => '$' + (c / 100).toFixed(2);
+const toCents = (v) => Math.round(Number(v) * 100);
+
+function show(id, text, kind) {
+  const el = $(id);
+  el.textContent = text;
+  el.className = 'msg' + (kind ? ' ' + kind : '');
+}
+
+async function api(path, method = 'GET', body) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (state.token) headers.Authorization = 'Bearer ' + state.token;
+  const res = await fetch('/api/' + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+  let data = {};
+  try { data = await res.json(); } catch (e) {}
+  return { ok: res.ok, status: res.status, data };
+}
+
+function setAccount(id) {
+  state.accountId = id;
+  try { localStorage.setItem('accountId', id); } catch (e) {}
+  $('acctId').textContent = id ? 'account ' + id : 'no account yet';
+}
+
+async function refresh() {
+  if (!state.accountId) return;
+  const r = await api(`ledger/accounts/${state.accountId}/balance`);
+  if (r.ok) { $('balance').textContent = dollars(r.data.balance); show('acctMsg', '', ''); }
+  else if (r.status === 404) {
+    setAccount(null); $('balance').textContent = '-';
+    show('acctMsg', 'That account no longer exists (the services keep data in memory). Sign up again to create a new one.', 'bad');
+  } else show('acctMsg', r.data.error || 'could not read the balance', 'bad');
+}
+
+$('signup').onclick = async () => {
+  const email = $('email').value, password = $('pw').value;
+  const s = await api('auth/signup', 'POST', { email, password });
+  if (!s.ok && s.status !== 409) return show('authMsg', s.data.error || 'signup failed', 'bad');
+  const l = await api('auth/login', 'POST', { email, password });
+  if (!l.ok) return show('authMsg', l.data.error || 'login failed', 'bad');
+  state.token = l.data.token;
+  const a = await api('ledger/accounts', 'POST', { owner: email });
+  if (!a.ok) return show('authMsg', a.data.error || 'could not create an account', 'bad');
+  setAccount(a.data.id);
+  show('authMsg', 'Signed up and logged in. An account was created for you.', 'good');
+  refresh();
+};
+
+$('login').onclick = async () => {
+  const l = await api('auth/login', 'POST', { email: $('email').value, password: $('pw').value });
+  if (!l.ok) return show('authMsg', l.data.error || 'login failed', 'bad');
+  state.token = l.data.token;
+  const me = await api('auth/me');
+  show('authMsg', me.ok ? 'Logged in as ' + me.data.email : 'Logged in.', 'good');
+  refresh();
+};
+
+$('deposit').onclick = async () => {
+  if (!state.accountId) return show('acctMsg', 'Sign up first.', 'bad');
+  const r = await api(`ledger/accounts/${state.accountId}/transactions`, 'POST', { type: 'deposit', amount: toCents($('dep').value) });
+  if (!r.ok) return show('acctMsg', r.data.error || 'deposit failed', 'bad');
+  $('balance').textContent = dollars(r.data.balance);
+  show('acctMsg', 'Deposit done.', 'good');
+};
+$('refresh').onclick = refresh;
+
+// Five $300 deposits: enough history for credit-scoring to rate the account "low risk".
+$('seed').onclick = async () => {
+  if (!state.accountId) return show('acctMsg', 'Sign up first.', 'bad');
+  for (let i = 0; i < 5; i++) {
+    const r = await api(`ledger/accounts/${state.accountId}/transactions`, 'POST', { type: 'deposit', amount: 30000 });
+    if (!r.ok) return show('acctMsg', r.data.error || 'could not load the sample history', 'bad');
+  }
+  show('acctMsg', 'Sample history loaded: five $300 deposits.', 'good');
+  refresh();
+};
+
+$('payee').onclick = async () => {
+  const a = await api('ledger/accounts', 'POST', { owner: 'demo payee' });
+  if (!a.ok) return show('payMsg', a.data.error || 'could not create a payee', 'bad');
+  $('to').value = a.data.id;
+  show('payMsg', 'Demo payee created and filled in.', 'good');
+};
+
+$('pay').onclick = async () => {
+  if (!state.accountId) return show('payMsg', 'Sign up first.', 'bad');
+  const r = await api('payments/payments', 'POST', { from: state.accountId, to: $('to').value.trim(), amount: toCents($('payAmt').value) });
+  if (r.ok) { show('payMsg', 'Payment completed.', 'good'); refresh(); }
+  else show('payMsg', (r.data.error || 'payment failed') + (r.data.refunded ? ' (your money was refunded)' : ''), 'bad');
+};
+
+$('loan').onclick = async () => {
+  if (!state.accountId) return show('loanMsg', 'Sign up first.', 'bad');
+  const r = await api('loans/loans', 'POST', { accountId: state.accountId, amount: toCents($('loanAmt').value), termMonths: Number($('term').value) });
+  if (r.ok) {
+    const l = r.data.loan;
+    show('loanMsg', `Approved: ${dollars(l.amount)} over ${l.termMonths} months, ${dollars(l.installment)} a month (credit band ${l.band}).`, 'good');
+    refresh();
+  } else if (r.data.status === 'denied') {
+    show('loanMsg', `Denied: ${r.data.reason} (credit band ${r.data.band}).`, 'bad');
+  } else {
+    show('loanMsg', 'Loan failed: ' + (r.data.error || 'unknown error'), 'bad');
+  }
+};
+
+if (state.accountId) refresh();
+</script>
+</body>
+</html>
