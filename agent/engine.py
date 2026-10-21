@@ -39,6 +39,7 @@ class CloudRouteOptimizer:
                 comp["id"],
                 type=comp.get("type", "VM"),
                 daily_cost=float(comp.get("daily_cost", 0.0)),
+                region=comp.get("region"),
             )
             for dep in comp.get("dependencies", []):
                 self.graph.add_edge(dep, comp["id"])
@@ -108,3 +109,44 @@ class CloudRouteOptimizer:
         blast_radius.insert(0, failed_component)
 
         return blast_radius
+
+    def check_residency(self, allowed_regions=None) -> Dict[str, Any]:
+        """
+        Data-residency check. A plain graph fact, like the phases.
+
+        Each component may carry a "region". Returns:
+          out_of_policy: components whose region is not in allowed_regions
+              (always empty when allowed_regions is None).
+          cross_region_dependencies: [dependency, dependent] pairs whose two
+              regions are both known and different.
+          unassigned: components with no region. They are reported, never
+              assumed compliant.
+        """
+        if isinstance(allowed_regions, str):
+            raise ValueError("allowed_regions must be a list of region names, not a string")
+        allowed = None if allowed_regions is None else set(allowed_regions)
+
+        def region(node):
+            return self.graph.nodes[node].get("region")
+
+        out_of_policy = []
+        unassigned = []
+        for node in self.graph.nodes:
+            r = region(node)
+            if r is None:
+                unassigned.append(node)
+            elif allowed is not None and r not in allowed:
+                out_of_policy.append(node)
+
+        cross = [
+            [dep, node]
+            for dep, node in self.graph.edges
+            if region(dep) is not None
+            and region(node) is not None
+            and region(dep) != region(node)
+        ]
+        return {
+            "out_of_policy": sorted(out_of_policy),
+            "cross_region_dependencies": sorted(cross),
+            "unassigned": sorted(unassigned),
+        }
