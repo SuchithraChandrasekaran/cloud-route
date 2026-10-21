@@ -27,6 +27,7 @@ from strands.models.openai import OpenAIModel
 
 from agent.engine import CloudRouteOptimizer
 from agent import retrieval
+from agent import right_sizing
 import json
 import re
 from agent.mock_data import MOCK_MIGRATION_BLUEPRINT
@@ -101,6 +102,19 @@ SYSTEM_PROMPT += (
     "tool has no note on that topic.' and nothing else. Cite only ids the "
     "tool returned. A note never changes the plan: the plan, its order and "
     "its rollback sets come only from the migration-plan tools."
+)
+
+# right-sizing prompt
+SYSTEM_PROMPT += (
+    "\n\nRight-sizing facts:\n"
+    "Another tool, get_right_sizing, returns each workload's requested CPU "
+    "and memory, its measured usage and a suggested request computed by the "
+    "engine. Call it only when the user asks about resource requests, sizing "
+    "or usage. State only numbers the tool returned, with their units, and "
+    "describe a suggestion only in the words of the tool's definition field. "
+    "Say that the figures come from one snapshot. Describe what the numbers "
+    "are, and nothing about what changing a request would do. A suggestion "
+    "never changes the plan or the cluster."
 )
 
 # data-residency prompt
@@ -284,6 +298,47 @@ RESIDENCY_NOTE = (
 )
 
 
+def _right_sizing_facts() -> dict:
+    """The engine's right-sizing rows, rounded for display, or an error."""
+    try:
+        rows = right_sizing.analyze(right_sizing.workloads_from_cluster())
+    except Exception as err:  # no cluster, no metrics service, no kubeconfig
+        return {"error": f"Right-sizing is unavailable: {err}"}
+    for row in rows:
+        for key in ("usage_cpu_m", "usage_mem_mi"):
+            if row[key] is not None:
+                row[key] = round(row[key], 2)
+    return {
+        "definition": right_sizing.DEFINITION,
+        "policy": {
+            "headroom": float(right_sizing.HEADROOM),
+            "cpu_floor_m": right_sizing.CPU_FLOOR_M,
+            "cpu_step_m": right_sizing.CPU_STEP_M,
+            "mem_floor_mi": right_sizing.MEM_FLOOR_MI,
+            "mem_step_mi": right_sizing.MEM_STEP_MI,
+        },
+        "summary": right_sizing.summarize(rows),
+        "workloads": rows,
+        "note": "One snapshot of measured usage. Nothing is changed in the cluster.",
+    }
+
+
+@tool
+def get_right_sizing() -> dict:
+    """
+    Reports, for each workload in the live cluster, its requested CPU and
+    memory, its measured usage and the engine's suggested request.
+
+    Returns:
+        A dictionary with "definition" (the only permitted description of a
+        suggestion), "policy" (the headroom, floors and steps used),
+        "summary" (counts), "workloads" (one entry per workload with its
+        request, measured and suggested values and a status) and "note".
+        On failure, a dictionary with "error".
+    """
+    return _right_sizing_facts()
+
+
 @tool
 def check_data_residency() -> dict:
     """
@@ -420,7 +475,7 @@ def build_agent() -> Agent:
     return Agent(
         model=model,
         system_prompt=SYSTEM_PROMPT,
-        tools=[compute_migration_plan, lookup_failure_modes, check_data_residency],
+        tools=[compute_migration_plan, lookup_failure_modes, check_data_residency, get_right_sizing],
         callback_handler=None,
     )
 
@@ -657,6 +712,37 @@ def run_residency(source: str, allowed_regions: list) -> None:
     _report_grounding(response, compute_migration_plan())
 
 
+def run_right_sizing(source: str) -> None:
+    """Prints the engine's right-sizing report, then has the model summarize it."""
+    if source != "k3s":
+        print("Right-sizing needs the live cluster: use --source k3s.")
+        return
+    facts = _right_sizing_facts()
+    if "error" in facts:
+        print(facts["error"])
+        return
+    print(right_sizing.format_report(facts["workloads"]))
+
+    if not os.environ.get("NEBIUS_API_KEY"):
+        print("\n(Set NEBIUS_API_KEY for a plain-language summary.)")
+        return
+    try:
+        _load_blueprint(source)
+    except ValueError as err:
+        print(f"Cannot build a migration plan: {err}")
+        return
+    agent = build_agent()
+    prompt = (
+        "Call get_right_sizing, then summarize the result for a platform "
+        "engineer in a few short sentences. Quote only numbers the tool "
+        "returned, with their units."
+    )
+    print("\nSummary for a platform engineer:\n")
+    response = _ask_agent(agent, prompt)
+    print(response)
+    _report_grounding(response, compute_migration_plan())
+
+
 def main():
     parser = argparse.ArgumentParser(description="cloud-route autonomous migration agent")
     parser.add_argument("--source", choices=["mock", "k3s"], default="mock")
@@ -668,10 +754,16 @@ def main():
     parser.add_argument("--propose-infra", default=None, metavar="REQUEST",
                         help='Draft (never apply) a proposal for new infrastructure, '
                              'e.g. --propose-infra "a staging database connected to monitoring"')
+    parser.add_argument("--right-sizing", action="store_true",
+                        help="Report requested versus measured CPU and memory "
+                             "for each workload (needs --source k3s)")
     parser.add_argument("--residency", default=None, metavar="REGIONS",
                         help='Check data residency against a comma-separated list of '
                              'allowed regions, e.g. --residency "eu-west-1,eu-central-1"')
     args = parser.parse_args()
+    if args.right_sizing:
+        run_right_sizing(args.source)
+        return
     if args.residency is not None:
         allowed = [r.strip() for r in args.residency.split(",") if r.strip()]
         run_residency(args.source, allowed)

@@ -60,6 +60,18 @@ UNSUPPORTED_PHRASES = [
     "at the same time",
     "validate any changes",
     "staging environment",
+    "savings",
+    "save money",
+    "saves money",
+    "wasted",
+    "wasteful",
+    "cheaper",
+    "reduce costs",
+    "reduce the cost",
+    "lower costs",
+    "lower the cost",
+    "improve performance",
+    "better performance",
 ]
 
 
