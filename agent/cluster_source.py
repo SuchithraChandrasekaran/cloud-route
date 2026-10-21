@@ -116,29 +116,37 @@ def load_blueprint_from_cluster(namespace: str = "default", kubeconfig_path: str
         names = [n.strip() for n in raw.split(",") if n.strip()]
         return [workload_ids.get(n, f"deployment/{n}") for n in names]
 
+    def with_region(component, annotations):
+        # Optional: cloud-route/region: eu-west-1. Added only when present,
+        # so components without the annotation look exactly as before.
+        raw = (annotations or {}).get("cloud-route/region")
+        if isinstance(raw, str) and raw.strip():
+            component["region"] = raw.strip()
+        return component
+
     # Services themselves have no workload dependency (they're the target
     # other things depend on), but they're still nodes in the graph.
     for svc in services:
         # The API server's own Service: no selector, not part of the app.
         if svc.metadata.name == "kubernetes" and not svc.spec.selector:
             continue
-        components.append({
+        components.append(with_region({
             "id": f"service/{svc.metadata.name}",
             "type": "Service",
             "daily_cost": 0.0,  # a Service itself has no compute cost
             "dependencies": [],
-        })
+        }, svc.metadata.annotations))
 
     for dep in deployments:
         pod_labels = (dep.spec.template.metadata.labels or {})
         cpu, mem = _extract_resource_requests(dep.spec.template.spec.containers)
-        components.append({
+        components.append(with_region({
             "id": f"deployment/{dep.metadata.name}",
             "type": "Deployment",
             "daily_cost": _daily_cost_estimate(cpu, mem),
             "dependencies": [f"service/{s}" for s in matching_services(pod_labels)]
             + declared_dependencies(dep.metadata.annotations),
-        })
+        }, dep.metadata.annotations))
 
     for sts in statefulsets:
         pod_labels = (sts.spec.template.metadata.labels or {})
@@ -149,11 +157,11 @@ def load_blueprint_from_cluster(namespace: str = "default", kubeconfig_path: str
             if governing not in deps:
                 deps.append(governing)
         deps += declared_dependencies(sts.metadata.annotations)
-        components.append({
+        components.append(with_region({
             "id": f"statefulset/{sts.metadata.name}",
             "type": "StatefulSet",
             "daily_cost": _daily_cost_estimate(cpu, mem),
             "dependencies": deps,
-        })
+        }, sts.metadata.annotations))
 
     return components
