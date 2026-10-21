@@ -3,7 +3,7 @@ Tests for max_batch_size, the engine's one real adjustable parameter.
 
 It caps how many components migrate in the same phase. The key properties:
 no cap behaves exactly as before, a cap never breaks dependency order,
-and smaller caps never lower the overhead heuristic (more phases score higher).
+and no cap ever scores below the uncapped plan (see test_batch_size_properties.py).
 """
 
 import pytest
@@ -68,14 +68,12 @@ def test_cap_never_breaks_dependency_order(cap):
         assert position[dependency] < position[dependent]
 
 
-def test_smaller_caps_never_lower_the_overhead():
+def test_capped_plans_never_score_below_the_uncapped_plan():
     optimizer = _optimizer()
-    overheads = [
-        optimizer.calculate_cost_optimized_sequence(cap)[1]
-        for cap in (None, 3, 2, 1)
-    ]
-    assert overheads == sorted(overheads)
-    assert overheads[-1] > overheads[0]   # a real trade-off, not a no-op
+    base = optimizer.calculate_cost_optimized_sequence()[1]
+    for cap in (5, 3, 2, 1):
+        assert optimizer.calculate_cost_optimized_sequence(cap)[1] >= base
+    assert optimizer.calculate_cost_optimized_sequence(1)[1] > base   # a real trade-off
 
 
 @pytest.mark.parametrize("bad", [0, -1, 1.5, "2", True])

@@ -98,7 +98,7 @@ ADJUSTABLE_PARAMETERS = [
         "allowed_values": "a positive integer, or no cap (the default)",
         "meaning": (
             "Caps how many components migrate in the same phase. A smaller "
-            "cap splits a phase into more, smaller phases that run one "
+            "cap splits a phase into smaller phases that run one "
             "after another."
         ),
     }
@@ -450,7 +450,7 @@ def run(
             f"adjustable_parameters, and every number you quote must come "
             f"from batch_size_comparison. max_batch_size caps how many "
             f"components migrate in one phase: no cap gives the fewest, "
-            f"largest phases; smaller caps give more, smaller phases, so "
+            f"largest phases; smaller caps give smaller phases, so "
             f"fewer components change at once. Pick the entry that best "
             f"fits the priority. Do not claim any figure for downtime or "
             f"risk; the tool provides none. If the priority has nothing to "

@@ -241,11 +241,19 @@ def check_no_false_cycles(components, optimizer_cls) -> dict:
 
 
 def check_batch_caps(components, optimizer_cls) -> dict:
+    """Per cap: nothing lost, no phase over the cap, dependency order kept.
+    Across caps, only relations that always hold are checked:
+      * the number of phases never falls as the cap shrinks
+      * every capped plan scores at least as high as the uncapped plan
+      * cap 1 scores at least as high as every other cap
+    The overhead is NOT required to rise at every step: caps 3 and 2 can give
+    the same number of phases and 3 can score higher, because the score
+    depends on how the chunks fall."""
     failures = []
-    overheads = []
+    runs = []   # (cap, phase_count, overhead), uncapped first, then caps shrinking
     for cap in (None,) + tuple(sorted(BATCH_CAPS, reverse=True)):
         _, phases, overhead = _plan(components, optimizer_cls, cap)
-        overheads.append(overhead)
+        runs.append((cap, len(phases), overhead))
         if cap is None:
             continue
         position = _phase_of(phases)
@@ -255,18 +263,27 @@ def check_batch_caps(components, optimizer_cls) -> dict:
             problems.append("components missing or duplicated")
         if any(len(p) > cap for p in phases):
             problems.append("a phase is larger than the cap")
-        if any(position[d] >= position[c["id"]]
+        if any(c["id"] not in position or d not in position
+               or position[d] >= position[c["id"]]
                for c in components for d in c.get("dependencies", [])):
             problems.append("dependency order broken")
         if problems:
             failures.append(f"cap {cap}: " + ", ".join(problems))
-    if overheads != sorted(overheads):
-        failures.append("smaller caps lowered the overhead heuristic")
-    total = len(BATCH_CAPS) + 1
+    counts = [n for _, n, _ in runs]
+    if counts != sorted(counts):
+        failures.append("a smaller cap produced fewer phases")
+    uncapped = runs[0][2]
+    if any(o < uncapped - 1e-9 for _, _, o in runs[1:]):
+        failures.append("a capped plan scored below the uncapped plan")
+    cap_one = runs[-1][2]
+    if any(o > cap_one + 1e-9 for _, _, o in runs):
+        failures.append("cap 1 scored below another cap")
+    total = len(BATCH_CAPS) + 3
     return _result("Batch-size caps keep the plan safe",
                    f"Caps {', '.join(map(str, BATCH_CAPS))}: no component lost, no "
-                   "phase over the cap, dependency order kept, and smaller caps "
-                   "never lower the overhead heuristic.",
+                   "phase over the cap, dependency order kept; the phase count "
+                   "never falls as the cap shrinks; every capped plan scores at "
+                   "least the uncapped one; cap 1 scores at least every other cap.",
                    total - len(failures), total, failures)
 
 
