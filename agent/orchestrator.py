@@ -103,6 +103,23 @@ SYSTEM_PROMPT += (
     "its rollback sets come only from the migration-plan tools."
 )
 
+# data-residency prompt
+SYSTEM_PROMPT += (
+    "\n\nData-residency facts:\n"
+    "A third tool, check_data_residency, returns facts from the cluster's "
+    "region annotations and the allowed regions the user supplied: "
+    "out_of_policy, cross_region_dependencies, unassigned and a regions "
+    "map. Call it only when the user asks about regions, data residency or "
+    "where components run. Describe only what the tool returns, naming the "
+    "components and regions it lists. A cross-region dependency is a pair "
+    "[dependency, dependent]: say the dependent relies on the dependency in "
+    "another region. A component under unassigned has an unknown region; "
+    "never call it compliant or non-compliant. Do not give a legal or "
+    "compliance judgment, do not name any regulation, and do not invent "
+    "regions or components. A residency flag never changes the plan or its "
+    "order."
+)
+
 HEURISTIC_DEFINITION = (
     "A rough, unit-less proxy computed by the engine for parallel-cost "
     "overhead. It is not a dollar figure and the tool provides no "
@@ -256,6 +273,50 @@ def lookup_failure_modes(topic: str) -> dict:
     return retrieval.lookup(topic)
 
 
+_allowed_regions: list | None = None
+
+RESIDENCY_NOTE = (
+    "These are structural facts taken from the cluster's region annotations "
+    "and the allowed-region list the user supplied. They are not a legal or "
+    "compliance judgment. A component under 'unassigned' has no region "
+    "annotation, so its region is unknown; it is not compliant and not "
+    "non-compliant."
+)
+
+
+@tool
+def check_data_residency() -> dict:
+    """
+    Reports data-residency facts from the engine: which components sit
+    outside the allowed regions, which dependencies cross a region boundary,
+    and which components have no region annotation.
+
+    Returns:
+        A dictionary with "allowed_regions" (the list the user supplied, or
+        null if none), "out_of_policy" (components outside the allowed
+        regions), "cross_region_dependencies" (pairs of [dependency,
+        dependent] in different regions), "unassigned" (components with no
+        region), "regions" (the region of each component named in the first
+        two lists) and "note" (the only permitted description of these
+        facts).
+    """
+    if _active_optimizer is None:
+        return {"error": "No blueprint loaded."}
+    result = _active_optimizer.check_residency(_allowed_regions)
+    flagged = set(result["out_of_policy"])
+    for pair in result["cross_region_dependencies"]:
+        flagged.update(pair)
+    return {
+        "allowed_regions": _allowed_regions,
+        "out_of_policy": result["out_of_policy"],
+        "cross_region_dependencies": result["cross_region_dependencies"],
+        "unassigned": result["unassigned"],
+        "regions": {n: _active_optimizer.graph.nodes[n].get("region")
+                    for n in sorted(flagged)},
+        "note": RESIDENCY_NOTE,
+    }
+
+
 # --------------------------------------------------------------------------
 # Suppressing the known reasoning notice
 # --------------------------------------------------------------------------
@@ -359,7 +420,7 @@ def build_agent() -> Agent:
     return Agent(
         model=model,
         system_prompt=SYSTEM_PROMPT,
-        tools=[compute_migration_plan, lookup_failure_modes],
+        tools=[compute_migration_plan, lookup_failure_modes, check_data_residency],
         callback_handler=None,
     )
 
@@ -563,6 +624,39 @@ def run(
         # new resources that are not in the migration plan.
 
 
+def run_residency(source: str, allowed_regions: list) -> None:
+    """Prints the engine's residency facts, then has the model explain them."""
+    global _allowed_regions
+    try:
+        _load_blueprint(source)
+    except ValueError as err:
+        print(f"Cannot build a migration plan: {err}")
+        return
+    _allowed_regions = allowed_regions
+
+    facts = check_data_residency()
+    print(f"Allowed regions: {allowed_regions}")
+    print(f"  Outside the allowed regions: {facts['out_of_policy']}")
+    print(f"  Dependencies across regions: {facts['cross_region_dependencies']}")
+    print(f"  No region annotation: {facts['unassigned']}")
+
+    if not os.environ.get("NEBIUS_API_KEY"):
+        print("\n(Set NEBIUS_API_KEY for a plain-language explanation.)")
+        return
+
+    agent = build_agent()
+    prompt = (
+        "Call check_data_residency, then explain the result for a "
+        "compliance reviewer in a few short sentences. Describe only what "
+        "the tool returns. Do not judge legal compliance or name any "
+        "regulation."
+    )
+    print("\nExplanation for a compliance reviewer:\n")
+    response = _ask_agent(agent, prompt)
+    print(response)
+    _report_grounding(response, compute_migration_plan())
+
+
 def main():
     parser = argparse.ArgumentParser(description="cloud-route autonomous migration agent")
     parser.add_argument("--source", choices=["mock", "k3s"], default="mock")
@@ -574,7 +668,14 @@ def main():
     parser.add_argument("--propose-infra", default=None, metavar="REQUEST",
                         help='Draft (never apply) a proposal for new infrastructure, '
                              'e.g. --propose-infra "a staging database connected to monitoring"')
+    parser.add_argument("--residency", default=None, metavar="REGIONS",
+                        help='Check data residency against a comma-separated list of '
+                             'allowed regions, e.g. --residency "eu-west-1,eu-central-1"')
     args = parser.parse_args()
+    if args.residency is not None:
+        allowed = [r.strip() for r in args.residency.split(",") if r.strip()]
+        run_residency(args.source, allowed)
+        return
     run(
         source=args.source,
         explain_audience=args.explain,
