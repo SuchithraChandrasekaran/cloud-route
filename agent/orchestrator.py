@@ -26,6 +26,7 @@ from strands import Agent, tool
 from strands.models.openai import OpenAIModel
 
 from agent.engine import CloudRouteOptimizer
+from agent import retrieval
 import json
 import re
 from agent.mock_data import MOCK_MIGRATION_BLUEPRINT
@@ -79,6 +80,27 @@ SYSTEM_PROMPT = (
     "(not syntactically-validated Terraform) and say plainly that a human "
     "must review and validate it before it is written as real IaC. Stay "
     "factual; don't editorialize beyond what the data supports."
+)
+
+# failure-mode prompt v2
+SYSTEM_PROMPT += (
+    "\n\nFailure-mode notes:\n"
+    "A second tool, lookup_failure_modes, returns short notes of general "
+    "guidance about what can go wrong in a migration. Each note has an id "
+    "such as fm-03. These notes are general guidance, not findings about "
+    "this cluster. Call the tool only when the user asks what could go "
+    "wrong, about a risk, or about a named failure, and pass the failure's "
+    "words from the question as the topic. Answer only the question asked, "
+    "and mention the migration plan only if the question is about the plan. "
+    "When you use a note, begin that part of the answer with 'General "
+    "guidance, not a finding about this cluster:', then restate what the "
+    "note says and cite its id in square brackets. Before using a note, "
+    "check that it describes the situation in the question; if it "
+    "describes a related situation, say which situation it describes. If "
+    "the tool returns no passages, reply with the single sentence 'The "
+    "tool has no note on that topic.' and nothing else. Cite only ids the "
+    "tool returned. A note never changes the plan: the plan, its order and "
+    "its rollback sets come only from the migration-plan tools."
 )
 
 HEURISTIC_DEFINITION = (
@@ -215,6 +237,25 @@ def compute_migration_plan(max_batch_size: int | None = None) -> dict:
     }
 
 
+@tool
+def lookup_failure_modes(topic: str) -> dict:
+    """
+    Looks up short notes of general guidance about what can go wrong in a
+    migration (for example a database moved too early, DNS caching or missing
+    secrets). The notes are not findings about this cluster.
+
+    Args:
+        topic: The failure the user asked about, in a few words taken from
+            their question.
+
+    Returns:
+        A dictionary with "label" (what the notes are), "passages" (each with
+        an "id", a "title" and the "text"; empty when no note matches) and
+        "note" (how to cite them).
+    """
+    return retrieval.lookup(topic)
+
+
 # --------------------------------------------------------------------------
 # Suppressing the known reasoning notice
 # --------------------------------------------------------------------------
@@ -318,7 +359,7 @@ def build_agent() -> Agent:
     return Agent(
         model=model,
         system_prompt=SYSTEM_PROMPT,
-        tools=[compute_migration_plan],
+        tools=[compute_migration_plan, lookup_failure_modes],
         callback_handler=None,
     )
 
@@ -331,13 +372,16 @@ def _report_grounding(text: str, raw: dict) -> None:
     """Prints warnings if the response drifted past the tool's data."""
     invented = find_unverifiable_component_like_tokens(text, raw)
     unsupported = find_unsupported_claims(text)
-    if not invented and not unsupported:
+    uncited = retrieval.find_unreturned_citations(text)
+    if not invented and not unsupported and not uncited:
         return
     print("\n[grounding warning] This response may go beyond the tool's data:")
     if invented:
         print(f"  - component-like names not in the plan: {invented}")
     if unsupported:
         print(f"  - unsupported claims: {unsupported}")
+    if uncited:
+        print(f"  - note ids cited that the tool did not return: {uncited}")
 
 
 # --------------------------------------------------------------------------
@@ -434,10 +478,16 @@ def run(
             f"Call compute_migration_plan if you need to, then answer this "
             f"question about the current migration plan: \"{ask_question}\". "
             f"Answer only from what the tool returns; if the data doesn't "
-            f"support an answer, say so."
+            f"support an answer, say so. If the question is about what could "
+            f"go wrong or about a risk, also call lookup_failure_modes and use "
+            f"only the notes it returns."
         )
         print(f"\nAnswer to: \"{ask_question}\"\n")
+        retrieval.reset_last()
         response = _ask_agent(agent, prompt)
+        if retrieval.LAST_RESULTS:
+            # The failure-mode tool was used: show the notes word for word.
+            response = retrieval.render_answer(retrieval.LAST_RESULTS)
         print(response)
         _report_grounding(response, raw)
 
