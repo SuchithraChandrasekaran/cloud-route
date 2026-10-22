@@ -1,0 +1,48 @@
+{"id": "explain-engineer", "run": 0, "label": "n", "note": ""}
+{"id": "explain-engineer", "run": 1, "label": "n", "note": ""}
+{"id": "explain-engineer", "run": 2, "label": "n", "note": ""}
+{"id": "explain-pm", "run": 0, "label": "n", "note": ""}
+{"id": "explain-pm", "run": 1, "label": "n", "note": ""}
+{"id": "explain-pm", "run": 2, "label": "n", "note": "", "aided": true}
+{"id": "explain-client", "run": 0, "label": "n", "note": "", "aided": true}
+{"id": "explain-client", "run": 1, "label": "n", "note": "", "aided": true}
+{"id": "explain-client", "run": 2, "label": "n", "note": "", "aided": true}
+{"id": "ask-first", "run": 0, "label": "n", "note": "", "aided": true}
+{"id": "ask-first", "run": 1, "label": "n", "note": "", "aided": true}
+{"id": "ask-first", "run": 2, "label": "n", "note": "", "aided": true}
+{"id": "ask-order", "run": 0, "label": "n", "note": "", "aided": true}
+{"id": "ask-order", "run": 1, "label": "n", "note": "", "aided": true}
+{"id": "ask-order", "run": 2, "label": "n", "note": "", "aided": true}
+{"id": "ask-phases", "run": 0, "label": "n", "note": "", "aided": true}
+{"id": "ask-phases", "run": 1, "label": "n", "note": "", "aided": true}
+{"id": "ask-phases", "run": 2, "label": "n", "note": "", "aided": true}
+{"id": "ask-parallel", "run": 0, "label": "n", "note": "", "aided": true}
+{"id": "ask-parallel", "run": 1, "label": "n", "note": "", "aided": true}
+{"id": "ask-parallel", "run": 2, "label": "n", "note": "", "aided": true}
+{"id": "ask-overhead", "run": 0, "label": "n", "note": "", "aided": true}
+{"id": "ask-overhead", "run": 1, "label": "n", "note": "", "aided": true}
+{"id": "ask-overhead", "run": 2, "label": "n", "note": "", "aided": true}
+{"id": "ask-auth", "run": 0, "label": "n", "note": "", "aided": true}
+{"id": "ask-auth", "run": 1, "label": "n", "note": "", "aided": true}
+{"id": "ask-auth", "run": 2, "label": "n", "note": "", "aided": true}
+{"id": "ask-expensive", "run": 0, "label": "n", "note": "", "aided": true}
+{"id": "ask-expensive", "run": 1, "label": "n", "note": "", "aided": true}
+{"id": "ask-expensive", "run": 2, "label": "n", "note": "", "aided": true}
+{"id": "ask-swap", "run": 0, "label": "n", "note": "", "aided": true}
+{"id": "ask-swap", "run": 1, "label": "n", "note": "", "aided": true}
+{"id": "ask-swap", "run": 2, "label": "n", "note": "", "aided": true}
+{"id": "ask-ledger", "run": 0, "label": "n", "note": "", "aided": true}
+{"id": "ask-ledger", "run": 1, "label": "n", "note": "", "aided": true}
+{"id": "ask-ledger", "run": 2, "label": "n", "note": "", "aided": true}
+{"id": "ask-manager", "run": 0, "label": "n", "note": "", "aided": true}
+{"id": "ask-manager", "run": 1, "label": "n", "note": "", "aided": true}
+{"id": "ask-manager", "run": 2, "label": "n", "note": "", "aided": true}
+{"id": "replan-cost", "run": 0, "label": "n", "note": "", "aided": true}
+{"id": "replan-cost", "run": 1, "label": "n", "note": "", "aided": true}
+{"id": "replan-cost", "run": 2, "label": "n", "note": "", "aided": true}
+{"id": "replan-phases", "run": 0, "label": "n", "note": "", "aided": true}
+{"id": "replan-phases", "run": 1, "label": "n", "note": "", "aided": true}
+{"id": "replan-phases", "run": 2, "label": "n", "note": "", "aided": true}
+{"id": "replan-safe", "run": 0, "label": "n", "note": "", "aided": true}
+{"id": "replan-safe", "run": 1, "label": "n", "note": "", "aided": true}
+{"id": "replan-safe", "run": 2, "label": "n", "note": "", "aided": true}
