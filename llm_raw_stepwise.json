@@ -1,0 +1,387 @@
+[
+ {
+  "shape": "chain",
+  "seed": 0,
+  "finish": "stop",
+  "reply": "\n\nFirst, compute the phase for each component:\n- svc-000 has no dependencies \u2192 phase\u202f1\n- svc-001 depends on svc-000 \u2192 phase\u202f1\u202f+\u202fphase(svc-000)\u202f=\u202f2\n- svc-002 depends on svc-001 \u2192 phase\u202f2\u202f+\u202f1\u202f=\u202f3\n- \u2026\n- svc-014 depends on svc-013 \u2192 phase\u202f14\u202f+\u202f1\u202f=\u202f15\n\nAll dependencies point to a component with a strictly smaller phase number, satisfying the constraint. Each component appears exactly once.\n\nGrouping by phase gives one component per phase, ordered from phase\u202f1 to phase\u202f15.\n\nFinal answer:\n{\"phases\":[[\"svc-000\"],[\"svc-001\"],[\"svc-002\"],[\"svc-003\"],[\"svc-004\"],[\"svc-005\"],[\"svc-006\"],[\"svc-007\"],[\"svc-008\"],[\"svc-009\"],[\"svc-010\"],[\"svc-011\"],[\"svc-012\"],[\"svc-013\"],[\"svc-014\"]]}",
+  "error": false
+ },
+ {
+  "shape": "chain",
+  "seed": 1,
+  "finish": "stop",
+  "reply": "\n\nThe dependency graph forms a strict linear chain:\n\nsvc\u2011000 \u2192 svc\u2011001 \u2192 svc\u2011002 \u2192 \u2026 \u2192 svc\u2011039  \n\nBecause each component depends (directly or transitively) on every component before it, no two distinct components can be placed in the same migration phase. Using the rule  \n\n*Phase = 1 if no dependencies, otherwise 1\u202f+\u202fmax(phase of its dependencies)*  \n\ngives:\n\n- svc\u2011000 \u2192 phase\u202f1  \n- svc\u2011001 \u2192 phase\u202f2  \n- svc\u2011002 \u2192 phase\u202f3  \n\u2026  \n- svc\u2011039 \u2192 phase\u202f40  \n\nEach phase therefore contains exactly one component.\n\nFinal answer:\n\n{\"phases\": [[\"svc-000\"], [\"svc-001\"], [\"svc-002\"], [\"svc-003\"], [\"svc-004\"], [\"svc-005\"], [\"svc-006\"], [\"svc-007\"], [\"svc-008\"], [\"svc-009\"], [\"svc-010\"], [\"svc-011\"], [\"svc-012\"], [\"svc-013\"], [\"svc-014\"], [\"svc-015\"], [\"svc-016\"], [\"svc-017\"], [\"svc-018\"], [\"svc-019\"], [\"svc-020\"], [\"svc-021\"], [\"svc-022\"], [\"svc-023\"], [\"svc-024\"], [\"svc-025\"], [\"svc-026\"], [\"svc-027\"], [\"svc-028\"], [\"svc-029\"], [\"svc-030\"], [\"svc-031\"], [\"svc-032\"], [\"svc-033\"], [\"svc-034\"], [\"svc-035\"], [\"svc-036\"], [\"svc-037\"], [\"svc-038\"], [\"svc-039\"]]}",
+  "error": false
+ },
+ {
+  "shape": "chain",
+  "seed": 2,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\"], [\"svc-001\"], [\"svc-002\"], [\"svc-003\"], [\"svc-004\"], [\"svc-005\"], [\"svc-006\"], [\"svc-007\"], [\"svc-008\"], [\"svc-009\"], [\"svc-010\"], [\"svc-011\"], [\"svc-012\"], [\"svc-013\"], [\"svc-014\"], [\"svc-015\"], [\"svc-016\"], [\"svc-017\"], [\"svc-018\"], [\"svc-019\"], [\"svc-020\"], [\"svc-021\"], [\"svc-022\"], [\"svc-023\"], [\"svc-024\"], [\"svc-025\"], [\"svc-026\"], [\"svc-027\"], [\"svc-028\"], [\"svc-029\"], [\"svc-030\"], [\"svc-031\"]]}",
+  "error": false
+ },
+ {
+  "shape": "chain",
+  "seed": 3,
+  "finish": "stop",
+  "reply": "\n\n**Working**\n\n1. Compute phase numbers:  \n   - svc-000 \u2192 no deps \u2192 phase\u202f1  \n   - svc-001 \u2192 depends on svc-000 (phase\u202f1) \u2192 1\u202f+\u202f1\u202f=\u202f2  \n   - svc-002 \u2192 depends on svc-001 (phase\u202f2) \u2192 2\u202f+\u202f1\u202f=\u202f3  \n   - svc-003 \u2192 depends on svc-002 (phase\u202f3) \u2192 3\u202f+\u202f1\u202f=\u202f4  \n   - svc-004 \u2192 depends on svc-003 (phase\u202f4) \u2192 4\u202f+\u202f1\u202f=\u202f5  \n\n2. Verify each dependency\u2019s phase is smaller than the dependent\u2019s phase \u2013 true for all edges.  \n3. Each component appears exactly once.\n\n**Answer**\n\n{\"phases\": [[\"svc-000\"], [\"svc-001\"], [\"svc-002\"], [\"svc-003\"], [\"svc-004\"]]}",
+  "error": false
+ },
+ {
+  "shape": "chain",
+  "seed": 4,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\":[[\"svc-000\"],[\"svc-001\"],[\"svc-002\"],[\"svc-003\"],[\"svc-004\"],[\"svc-005\"],[\"svc-006\"],[\"svc-007\"],[\"svc-008\"],[\"svc-009\"],[\"svc-010\"],[\"svc-011\"],[\"svc-012\"],[\"svc-013\"],[\"svc-014\"],[\"svc-015\"],[\"svc-016\"],[\"svc-017\"],[\"svc-018\"],[\"svc-019\"],[\"svc-020\"],[\"svc-021\"],[\"svc-022\"],[\"svc-023\"]]}",
+  "error": false
+ },
+ {
+  "shape": "fan-out",
+  "seed": 0,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\"], [\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-021\",\"svc-022\",\"svc-023\",\"svc-024\",\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\"svc-031\",\"svc-032\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-036\",\"svc-037\",\"svc-038\",\"svc-039\",\"svc-040\",\"svc-041\",\"svc-042\",\"svc-043\",\"svc-044\"]]}",
+  "error": false
+ },
+ {
+  "shape": "fan-out",
+  "seed": 1,
+  "finish": "stop",
+  "reply": "\n\n**Working**\n\n1. **Phase numbers**\n   - `svc-000` has no dependencies \u2192 phase\u202f1.\n   - Every other service depends only on `svc-000`. The largest phase among its dependencies is 1 \u2192 phase\u202f=\u202f1\u202f+\u202f1\u202f=\u202f2.\n\n2. **Validation**\n   - All dependencies (`svc-000`) have phase\u202f1, which is smaller than the dependent services\u2019 phase\u202f2.\n   - Each component appears exactly once.\n\n3. **Resulting phases**\n   - Phase\u202f1: `svc-000`\n   - Phase\u202f2: all remaining services (`svc-001` through `svc-050`).\n\n**Answer**\n\n```json\n{\n  \"phases\": [\n    [\"svc-000\"],\n    [\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\n     \"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\n     \"svc-021\",\"svc-022\",\"svc-023\",\"svc-024\",\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\n     \"svc-031\",\"svc-032\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-036\",\"svc-037\",\"svc-038\",\"svc-039\",\"svc-040\",\n     \"svc-041\",\"svc-042\",\"svc-043\",\"svc-044\",\"svc-045\",\"svc-046\",\"svc-047\",\"svc-048\",\"svc-049\",\"svc-050\"]\n  ]\n}\n```",
+  "error": false
+ },
+ {
+  "shape": "fan-out",
+  "seed": 2,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\":[[\"svc-000\"],[\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-021\",\"svc-022\",\"svc-023\",\"svc-024\",\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\"svc-031\",\"svc-032\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-036\",\"svc-037\",\"svc-038\",\"svc-039\",\"svc-040\",\"svc-041\",\"svc-042\",\"svc-043\",\"svc-044\",\"svc-045\",\"svc-046\",\"svc-047\",\"svc-048\",\"svc-049\",\"svc-050\",\"svc-051\",\"svc-052\",\"svc-053\",\"svc-054\",\"svc-055\",\"svc-056\",\"svc-057\",\"svc-058\",\"svc-059\",\"svc-060\",\"svc-061\",\"svc-062\",\"svc-063\",\"svc-064\"]]}",
+  "error": false
+ },
+ {
+  "shape": "fan-out",
+  "seed": 3,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\"], [\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-021\",\"svc-022\",\"svc-023\",\"svc-024\",\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\"svc-031\",\"svc-032\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-036\",\"svc-037\",\"svc-038\",\"svc-039\",\"svc-040\",\"svc-041\",\"svc-042\",\"svc-043\",\"svc-044\",\"svc-045\",\"svc-046\",\"svc-047\",\"svc-048\",\"svc-049\",\"svc-050\",\"svc-051\",\"svc-052\",\"svc-053\",\"svc-054\",\"svc-055\",\"svc-056\",\"svc-057\",\"svc-058\",\"svc-059\",\"svc-060\",\"svc-061\",\"svc-062\",\"svc-063\",\"svc-064\",\"svc-065\",\"svc-066\",\"svc-067\",\"svc-068\",\"svc-069\",\"svc-070\",\"svc-071\",\"svc-072\",\"svc-073\",\"svc-074\",\"svc-075\",\"svc-076\",\"svc-077\",\"svc-078\",\"svc-079\",\"svc-080\",\"svc-081\",\"svc-082\",\"svc-083\",\"svc-084\",\"svc-085\",\"svc-086\",\"svc-087\",\"svc-088\",\"svc-089\",\"svc-090\",\"svc-091\",\"svc-092\",\"svc-093\",\"svc-094\",\"svc-095\",\"svc-096\",\"svc-097\",\"svc-098\",\"svc-099\",\"svc-100\",\"svc-101\",\"svc-102\",\"svc-103\",\"svc-104\",\"svc-105\",\"svc-106\",\"svc-107\",\"svc-108\",\"svc-109\",\"svc-110\",\"svc-111\",\"svc-112\",\"svc-113\",\"svc-114\",\"svc-115\",\"svc-116\",\"svc-117\",\"svc-118\",\"svc-119\",\"svc-120\",\"svc-121\",\"svc-122\",\"svc-123\",\"svc-124\",\"svc-125\",\"svc-126\",\"svc-127\",\"svc-128\",\"svc-129\",\"svc-130\",\"svc-131\",\"svc-132\",\"svc-133\",\"svc-134\",\"svc-135\",\"svc-136\",\"svc-137\",\"svc-138\",\"svc-139\",\"svc-140\",\"svc-141\",\"svc-142\",\"svc-143\",\"svc-144\"]]}",
+  "error": false
+ },
+ {
+  "shape": "fan-out",
+  "seed": 4,
+  "finish": "stop",
+  "reply": "\n\n**Working**\n\n1. **Phase calculation**\n   - `svc-000` has no dependencies \u2192 phase\u202f=\u202f1.\n   - Every other component (`svc-001` \u2026 `svc-097`) depends only on `svc-000`.  \n     Their maximum dependency phase is 1 \u2192 phase\u202f=\u202f1\u202f+\u202f1\u202f=\u202f2.\n\n2. **Validation**\n   - For each component, all its dependencies are in a strictly lower phase:\n     - `svc-000`: none \u2192 trivially satisfied.\n     - Any `svc-XXX` (XXX\u202f\u2265\u202f001): depends on `svc-000` (phase\u202f1) < its own phase\u202f(2).\n   - Each component appears exactly once in the lists below.\n\n3. **Resulting phases**\n   - Phase\u202f1: `svc-000`\n   - Phase\u202f2: all remaining components (`svc-001` through `svc-097`).\n\n**Final answer**\n\n{\"phases\": [[\"svc-000\"], [\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-021\",\"svc-022\",\"svc-023\",\"svc-024\",\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\"svc-031\",\"svc-032\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-036\",\"svc-037\",\"svc-038\",\"svc-039\",\"svc-040\",\"svc-041\",\"svc-042\",\"svc-043\",\"svc-044\",\"svc-045\",\"svc-046\",\"svc-047\",\"svc-048\",\"svc-049\",\"svc-050\",\"svc-051\",\"svc-052\",\"svc-053\",\"svc-054\",\"svc-055\",\"svc-056\",\"svc-057\",\"svc-058\",\"svc-059\",\"svc-060\",\"svc-061\",\"svc-062\",\"svc-063\",\"svc-064\",\"svc-065\",\"svc-066\",\"svc-067\",\"svc-068\",\"svc-069\",\"svc-070\",\"svc-071\",\"svc-072\",\"svc-073\",\"svc-074\",\"svc-075\",\"svc-076\",\"svc-077\",\"svc-078\",\"svc-079\",\"svc-080\",\"svc-081\",\"svc-082\",\"svc-083\",\"svc-084\",\"svc-085\",\"svc-086\",\"svc-087\",\"svc-088\",\"svc-089\",\"svc-090\",\"svc-091\",\"svc-092\",\"svc-093\",\"svc-094\",\"svc-095\",\"svc-096\",\"svc-097\"]]}",
+  "error": false
+ },
+ {
+  "shape": "fan-in",
+  "seed": 0,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\":[[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-021\",\"svc-022\",\"svc-023\",\"svc-024\",\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\"svc-031\",\"svc-032\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-036\",\"svc-037\",\"svc-038\",\"svc-039\",\"svc-040\",\"svc-041\",\"svc-042\",\"svc-043\",\"svc-044\",\"svc-045\",\"svc-046\",\"svc-047\",\"svc-048\",\"svc-049\",\"svc-050\",\"svc-051\",\"svc-052\",\"svc-053\",\"svc-054\",\"svc-055\",\"svc-056\",\"svc-057\",\"svc-058\",\"svc-059\",\"svc-060\",\"svc-061\",\"svc-062\",\"svc-063\",\"svc-064\",\"svc-065\",\"svc-066\",\"svc-067\",\"svc-068\",\"svc-069\",\"svc-070\",\"svc-071\",\"svc-072\",\"svc-073\",\"svc-074\",\"svc-075\",\"svc-076\",\"svc-077\",\"svc-078\",\"svc-079\",\"svc-080\",\"svc-081\",\"svc-082\",\"svc-083\",\"svc-084\",\"svc-085\",\"svc-086\",\"svc-087\",\"svc-088\",\"svc-089\",\"svc-090\",\"svc-091\",\"svc-092\",\"svc-093\",\"svc-094\",\"svc-095\",\"svc-096\",\"svc-097\",\"svc-098\",\"svc-099\",\"svc-100\",\"svc-101\",\"svc-102\",\"svc-103\",\"svc-104\",\"svc-105\",\"svc-106\",\"svc-107\",\"svc-108\",\"svc-109\",\"svc-110\",\"svc-111\",\"svc-112\",\"svc-113\",\"svc-114\",\"svc-115\",\"svc-116\",\"svc-117\",\"svc-118\"],[\"svc-119\"]]}",
+  "error": false
+ },
+ {
+  "shape": "fan-in",
+  "seed": 1,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-021\",\"svc-022\",\"svc-023\",\"svc-024\",\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\"svc-031\",\"svc-032\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-036\",\"svc-037\",\"svc-038\",\"svc-039\",\"svc-040\",\"svc-041\",\"svc-042\",\"svc-043\",\"svc-044\",\"svc-045\",\"svc-046\",\"svc-047\",\"svc-048\",\"svc-049\",\"svc-050\",\"svc-051\",\"svc-052\",\"svc-053\",\"svc-054\",\"svc-055\",\"svc-056\",\"svc-057\",\"svc-058\",\"svc-059\",\"svc-060\",\"svc-061\",\"svc-062\",\"svc-063\",\"svc-064\",\"svc-065\",\"svc-066\",\"svc-067\",\"svc-068\",\"svc-069\",\"svc-070\",\"svc-071\",\"svc-072\",\"svc-073\",\"svc-074\",\"svc-075\",\"svc-076\",\"svc-077\",\"svc-078\",\"svc-079\",\"svc-080\",\"svc-081\",\"svc-082\",\"svc-083\",\"svc-084\",\"svc-085\",\"svc-086\",\"svc-087\",\"svc-088\",\"svc-089\",\"svc-090\",\"svc-091\",\"svc-092\",\"svc-093\",\"svc-094\",\"svc-095\",\"svc-096\",\"svc-097\",\"svc-098\",\"svc-099\",\"svc-100\",\"svc-101\",\"svc-102\",\"svc-103\",\"svc-104\",\"svc-105\",\"svc-106\",\"svc-107\",\"svc-108\",\"svc-109\",\"svc-110\",\"svc-111\",\"svc-112\",\"svc-113\",\"svc-114\",\"svc-115\",\"svc-116\",\"svc-117\",\"svc-118\",\"svc-119\",\"svc-120\",\"svc-121\",\"svc-122\",\"svc-123\",\"svc-124\",\"svc-125\",\"svc-126\",\"svc-127\",\"svc-128\",\"svc-129\",\"svc-130\",\"svc-131\",\"svc-132\",\"svc-133\",\"svc-134\",\"svc-135\",\"svc-136\",\"svc-137\",\"svc-138\",\"svc-139\",\"svc-140\",\"svc-141\",\"svc-142\",\"svc-143\",\"svc-144\",\"svc-145\",\"svc-146\",\"svc-147\",\"svc-148\",\"svc-149\",\"svc-150\",\"svc-151\",\"svc-152\",\"svc-153\",\"svc-154\",\"svc-155\",\"svc-156\",\"svc-157\",\"svc-158\",\"svc-159\",\"svc-160\",\"svc-161\",\"svc-162\",\"svc-163\",\"svc-164\",\"svc-165\",\"svc-166\",\"svc-167\",\"svc-168\",\"svc-169\",\"svc-170\",\"svc-171\",\"svc-172\",\"svc-173\",\"svc-174\",\"svc-175\",\"svc-176\",\"svc-177\",\"svc-178\",\"svc-179\",\"svc-180\",\"svc-181\"],[\"svc-182\"]]}",
+  "error": false
+ },
+ {
+  "shape": "fan-in",
+  "seed": 2,
+  "finish": "stop",
+  "reply": "\n\nAll components svc-000 through svc-029 have no dependencies, so they can all be migrated in phase\u202f1.  \nComponent svc-030 depends on every one of those, so it must wait until phase\u202f1 finishes and can be migrated in phase\u202f2.\n\nThis yields the minimal number of phases (2) and satisfies the dependency constraints.\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-021\",\"svc-022\",\"svc-023\",\"svc-024\",\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\"],[\"svc-030\"]]}",
+  "error": false
+ },
+ {
+  "shape": "fan-in",
+  "seed": 3,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-021\",\"svc-022\",\"svc-023\",\"svc-024\",\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\"svc-031\",\"svc-032\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-036\",\"svc-037\",\"svc-038\",\"svc-039\",\"svc-040\",\"svc-041\",\"svc-042\",\"svc-043\",\"svc-044\",\"svc-045\",\"svc-046\",\"svc-047\",\"svc-048\",\"svc-049\",\"svc-050\",\"svc-051\",\"svc-052\",\"svc-053\",\"svc-054\",\"svc-055\",\"svc-056\",\"svc-057\",\"svc-058\",\"svc-059\",\"svc-060\",\"svc-061\",\"svc-062\",\"svc-063\",\"svc-064\",\"svc-065\",\"svc-066\",\"svc-067\"],[\"svc-068\"]]}",
+  "error": false
+ },
+ {
+  "shape": "fan-in",
+  "seed": 4,
+  "finish": "stop",
+  "reply": "\n\nThe components svc-000 through svc-135 have no dependencies, so they can all migrate in phase\u202f1.  \nComponent svc-136 depends on every one of those 136 components, therefore it must wait until after the latest of them finishes; its earliest possible phase is 1\u202f+\u202f1\u202f=\u202f2.  \nThus the minimum number of phases is 2, with the assignment:\n\n- Phase\u202f1: svc-000 \u2026 svc-135  \n- Phase\u202f2: svc-136\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-021\",\"svc-022\",\"svc-023\",\"svc-024\",\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\"svc-031\",\"svc-032\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-036\",\"svc-037\",\"svc-038\",\"svc-039\",\"svc-040\",\"svc-041\",\"svc-042\",\"svc-043\",\"svc-044\",\"svc-045\",\"svc-046\",\"svc-047\",\"svc-048\",\"svc-049\",\"svc-050\",\"svc-051\",\"svc-052\",\"svc-053\",\"svc-054\",\"svc-055\",\"svc-056\",\"svc-057\",\"svc-058\",\"svc-059\",\"svc-060\",\"svc-061\",\"svc-062\",\"svc-063\",\"svc-064\",\"svc-065\",\"svc-066\",\"svc-067\",\"svc-068\",\"svc-069\",\"svc-070\",\"svc-071\",\"svc-072\",\"svc-073\",\"svc-074\",\"svc-075\",\"svc-076\",\"svc-077\",\"svc-078\",\"svc-079\",\"svc-080\",\"svc-081\",\"svc-082\",\"svc-083\",\"svc-084\",\"svc-085\",\"svc-086\",\"svc-087\",\"svc-088\",\"svc-089\",\"svc-090\",\"svc-091\",\"svc-092\",\"svc-093\",\"svc-094\",\"svc-095\",\"svc-096\",\"svc-097\",\"svc-098\",\"svc-099\",\"svc-100\",\"svc-101\",\"svc-102\",\"svc-103\",\"svc-104\",\"svc-105\",\"svc-106\",\"svc-107\",\"svc-108\",\"svc-109\",\"svc-110\",\"svc-111\",\"svc-112\",\"svc-113\",\"svc-114\",\"svc-115\",\"svc-116\",\"svc-117\",\"svc-118\",\"svc-119\",\"svc-120\",\"svc-121\",\"svc-122\",\"svc-123\",\"svc-124\",\"svc-125\",\"svc-126\",\"svc-127\",\"svc-128\",\"svc-129\",\"svc-130\",\"svc-131\",\"svc-132\",\"svc-133\",\"svc-134\",\"svc-135\"],[\"svc-136\"]]}",
+  "error": false
+ },
+ {
+  "shape": "layered",
+  "seed": 0,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-021\",\"svc-022\"],[\"svc-023\",\"svc-024\",\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\"svc-031\",\"svc-032\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-036\",\"svc-037\",\"svc-038\"],[\"svc-039\",\"svc-040\",\"svc-041\",\"svc-042\",\"svc-043\",\"svc-044\",\"svc-045\",\"svc-046\",\"svc-047\",\"svc-048\",\"svc-049\",\"svc-050\",\"svc-051\",\"svc-052\",\"svc-053\",\"svc-054\",\"svc-055\",\"svc-056\",\"svc-057\",\"svc-058\",\"svc-059\",\"svc-060\",\"svc-061\"],[\"svc-062\",\"svc-063\",\"svc-064\",\"svc-065\",\"svc-066\",\"svc-067\",\"svc-068\",\"svc-069\",\"svc-070\",\"svc-071\",\"svc-072\",\"svc-073\"],[\"svc-074\",\"svc-075\",\"svc-076\",\"svc-077\",\"svc-078\",\"svc-079\",\"svc-080\",\"svc-081\",\"svc-082\",\"svc-083\",\"svc-084\",\"svc-085\",\"svc-086\",\"svc-087\",\"svc-088\",\"svc-089\",\"svc-090\"]]}",
+  "error": false
+ },
+ {
+  "shape": "layered",
+  "seed": 1,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-021\",\"svc-022\"],[\"svc-023\",\"svc-024\",\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\"svc-031\",\"svc-032\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-036\",\"svc-037\"],[\"svc-038\",\"svc-039\",\"svc-040\",\"svc-041\",\"svc-042\",\"svc-043\",\"svc-044\",\"svc-045\",\"svc-046\",\"svc-047\",\"svc-048\",\"svc-049\",\"svc-050\",\"svc-051\",\"svc-052\",\"svc-053\",\"svc-054\",\"svc-055\"],[\"svc-056\",\"svc-057\",\"svc-058\",\"svc-059\",\"svc-060\",\"svc-061\",\"svc-062\",\"svc-063\",\"svc-064\",\"svc-065\",\"svc-066\",\"svc-067\",\"svc-068\",\"svc-069\",\"svc-070\",\"svc-071\",\"svc-072\",\"svc-073\",\"svc-074\",\"svc-075\"],[\"svc-076\",\"svc-077\",\"svc-078\",\"svc-079\",\"svc-080\",\"svc-081\",\"svc-082\",\"svc-083\",\"svc-084\",\"svc-085\",\"svc-086\",\"svc-087\"],[\"svc-088\",\"svc-089\",\"svc-090\",\"svc-091\",\"svc-092\",\"svc-093\",\"svc-094\",\"svc-095\",\"svc-096\",\"svc-097\",\"svc-098\",\"svc-099\",\"svc-100\",\"svc-101\"],[\"svc-102\",\"svc-103\",\"svc-104\",\"svc-105\",\"svc-106\",\"svc-107\",\"svc-108\",\"svc-109\",\"svc-110\",\"svc-111\",\"svc-112\",\"svc-113\"]]}",
+  "error": false
+ },
+ {
+  "shape": "layered",
+  "seed": 2,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\"],[\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-021\",\"svc-022\",\"svc-023\",\"svc-024\",\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\"svc-031\",\"svc-032\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-036\"],[\"svc-037\",\"svc-038\",\"svc-039\",\"svc-040\",\"svc-041\",\"svc-042\",\"svc-043\",\"svc-044\",\"svc-045\",\"svc-046\",\"svc-047\",\"svc-048\",\"svc-049\",\"svc-050\",\"svc-051\",\"svc-052\",\"svc-053\",\"svc-054\",\"svc-055\"],[\"svc-056\",\"svc-057\",\"svc-058\",\"svc-059\",\"svc-060\",\"svc-061\",\"svc-062\",\"svc-063\",\"svc-064\",\"svc-065\"],[\"svc-066\",\"svc-067\",\"svc-068\",\"svc-069\",\"svc-070\",\"svc-071\",\"svc-072\",\"svc-073\",\"svc-074\",\"svc-075\",\"svc-076\",\"svc-077\",\"svc-078\",\"svc-079\",\"svc-080\",\"svc-081\",\"svc-082\",\"svc-083\",\"svc-084\",\"svc-085\",\"svc-086\"],[\"svc-087\",\"svc-088\",\"svc-089\",\"svc-090\",\"svc-091\",\"svc-092\",\"svc-093\",\"svc-094\",\"svc-095\",\"svc-096\",\"svc-097\",\"svc-098\",\"svc-099\",\"svc-100\",\"svc-101\",\"svc-102\",\"svc-103\"]]}",
+  "error": false
+ },
+ {
+  "shape": "layered",
+  "seed": 3,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\"],[\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-015\"],[\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-021\",\"svc-022\",\"svc-023\",\"svc-024\"],[\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\"svc-031\",\"svc-032\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-036\",\"svc-037\",\"svc-038\",\"svc-039\",\"svc-042\",\"svc-043\",\"svc-044\",\"svc-048\",\"svc-049\",\"svc-052\"],[\"svc-040\",\"svc-041\",\"svc-045\",\"svc-046\",\"svc-047\",\"svc-050\",\"svc-051\",\"svc-053\",\"svc-056\",\"svc-058\",\"svc-061\",\"svc-062\",\"svc-063\",\"svc-064\"],[\"svc-054\",\"svc-055\",\"svc-057\",\"svc-059\",\"svc-060\",\"svc-065\",\"svc-066\"]]}",
+  "error": false
+ },
+ {
+  "shape": "layered",
+  "seed": 4,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\"],[\"svc-004\",\"svc-005\",\"svc-006\"],[\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\"],[\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\"],[\"svc-021\",\"svc-022\"],[\"svc-023\",\"svc-024\"],[\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\"svc-031\"]]}",
+  "error": false
+ },
+ {
+  "shape": "diamonds",
+  "seed": 0,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-112\"],[\"svc-001\",\"svc-002\"],[\"svc-003\"],[\"svc-004\",\"svc-005\"],[\"svc-006\"],[\"svc-007\",\"svc-008\"],[\"svc-009\"],[\"svc-010\",\"svc-011\"],[\"svc-012\"],[\"svc-013\",\"svc-014\"],[\"svc-015\"],[\"svc-016\",\"svc-017\"],[\"svc-018\"],[\"svc-019\",\"svc-020\"],[\"svc-021\"],[\"svc-022\",\"svc-023\"],[\"svc-024\"],[\"svc-025\",\"svc-026\"],[\"svc-027\"],[\"svc-028\",\"svc-029\"],[\"svc-030\"],[\"svc-031\",\"svc-032\"],[\"svc-033\"],[\"svc-034\",\"svc-035\"],[\"svc-036\"],[\"svc-037\",\"svc-038\"],[\"svc-039\"],[\"svc-040\",\"svc-041\"],[\"svc-042\"],[\"svc-043\",\"svc-044\"],[\"svc-045\"],[\"svc-046\",\"svc-047\"],[\"svc-048\"],[\"svc-049\",\"svc-050\"],[\"svc-051\"],[\"svc-052\",\"svc-053\"],[\"svc-054\"],[\"svc-055\",\"svc-056\"],[\"svc-057\"],[\"svc-058\",\"svc-059\"],[\"svc-060\"],[\"svc-061\",\"svc-062\"],[\"svc-063\"],[\"svc-064\",\"svc-065\"],[\"svc-066\"],[\"svc-067\",\"svc-068\"],[\"svc-069\"],[\"svc-070\",\"svc-071\"],[\"svc-072\"],[\"svc-073\",\"svc-074\"],[\"svc-075\"],[\"svc-076\",\"svc-077\"],[\"svc-078\"],[\"svc-079\",\"svc-080\"],[\"svc-081\"],[\"svc-082\",\"svc-083\"],[\"svc-084\"],[\"svc-085\",\"svc-086\"],[\"svc-087\"],[\"svc-088\",\"svc-089\"],[\"svc-090\"],[\"svc-091\",\"svc-092\"],[\"svc-093\"],[\"svc-094\",\"svc-095\"],[\"svc-096\"],[\"svc-097\",\"svc-098\"],[\"svc-099\"],[\"svc-100\",\"svc-101\"],[\"svc-102\"],[\"svc-103\",\"svc-104\"],[\"svc-105\"],[\"svc-106\",\"svc-107\"],[\"svc-108\"],[\"svc-109\",\"svc-110\"],[\"svc-111\"]]}",
+  "error": false
+ },
+ {
+  "shape": "diamonds",
+  "seed": 1,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-022\",\"svc-023\",\"svc-024\"], [\"svc-001\",\"svc-002\"], [\"svc-003\"], [\"svc-004\",\"svc-005\"], [\"svc-006\"], [\"svc-007\",\"svc-008\"], [\"svc-009\"], [\"svc-010\",\"svc-011\"], [\"svc-012\"], [\"svc-013\",\"svc-014\"], [\"svc-015\"], [\"svc-016\",\"svc-017\"], [\"svc-018\"], [\"svc-019\",\"svc-020\"], [\"svc-021\"]]}",
+  "error": false
+ },
+ {
+  "shape": "diamonds",
+  "seed": 2,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-094\",\"svc-095\"],[\"svc-001\",\"svc-002\"],[\"svc-003\"],[\"svc-004\",\"svc-005\"],[\"svc-006\"],[\"svc-007\",\"svc-008\"],[\"svc-009\"],[\"svc-010\",\"svc-011\"],[\"svc-012\"],[\"svc-013\",\"svc-014\"],[\"svc-015\"],[\"svc-016\",\"svc-017\"],[\"svc-018\"],[\"svc-019\",\"svc-020\"],[\"svc-021\"],[\"svc-022\",\"svc-023\"],[\"svc-024\"],[\"svc-025\",\"svc-026\"],[\"svc-027\"],[\"svc-028\",\"svc-029\"],[\"svc-030\"],[\"svc-031\",\"svc-032\"],[\"svc-033\"],[\"svc-034\",\"svc-035\"],[\"svc-036\"],[\"svc-037\",\"svc-038\"],[\"svc-039\"],[\"svc-040\",\"svc-041\"],[\"svc-042\"],[\"svc-043\",\"svc-044\"],[\"svc-045\"],[\"svc-046\",\"svc-047\"],[\"svc-048\"],[\"svc-049\",\"svc-050\"],[\"svc-051\"],[\"svc-052\",\"svc-053\"],[\"svc-054\"],[\"svc-055\",\"svc-056\"],[\"svc-057\"],[\"svc-058\",\"svc-059\"],[\"svc-060\"],[\"svc-061\",\"svc-062\"],[\"svc-063\"],[\"svc-064\",\"svc-065\"],[\"svc-066\"],[\"svc-067\",\"svc-068\"],[\"svc-069\"],[\"svc-070\",\"svc-071\"],[\"svc-072\"],[\"svc-073\",\"svc-074\"],[\"svc-075\"],[\"svc-076\",\"svc-077\"],[\"svc-078\"],[\"svc-079\",\"svc-080\"],[\"svc-081\"],[\"svc-082\",\"svc-083\"],[\"svc-084\"],[\"svc-085\",\"svc-086\"],[\"svc-087\"],[\"svc-088\",\"svc-089\"],[\"svc-090\"],[\"svc-091\",\"svc-092\"],[\"svc-093\"]]}",
+  "error": false
+ },
+ {
+  "shape": "diamonds",
+  "seed": 3,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-064\",\"svc-065\"],[\"svc-001\",\"svc-002\"],[\"svc-003\"],[\"svc-004\",\"svc-005\"],[\"svc-006\"],[\"svc-007\",\"svc-008\"],[\"svc-009\"],[\"svc-010\",\"svc-011\"],[\"svc-012\"],[\"svc-013\",\"svc-014\"],[\"svc-015\"],[\"svc-016\",\"svc-017\"],[\"svc-018\"],[\"svc-019\",\"svc-020\"],[\"svc-021\"],[\"svc-022\",\"svc-023\"],[\"svc-024\"],[\"svc-025\",\"svc-026\"],[\"svc-027\"],[\"svc-028\",\"svc-029\"],[\"svc-030\"],[\"svc-031\",\"svc-032\"],[\"svc-033\"],[\"svc-034\",\"svc-035\"],[\"svc-036\"],[\"svc-037\",\"svc-038\"],[\"svc-039\"],[\"svc-040\",\"svc-041\"],[\"svc-042\"],[\"svc-043\",\"svc-044\"],[\"svc-045\"],[\"svc-046\",\"svc-047\"],[\"svc-048\"],[\"svc-049\",\"svc-050\"],[\"svc-051\"],[\"svc-052\",\"svc-053\"],[\"svc-054\"],[\"svc-055\",\"svc-056\"],[\"svc-057\"],[\"svc-058\",\"svc-059\"],[\"svc-060\"],[\"svc-061\",\"svc-062\"],[\"svc-063\"]]}",
+  "error": false
+ },
+ {
+  "shape": "diamonds",
+  "seed": 4,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-091\",\"svc-092\"],[\"svc-001\",\"svc-002\"],[\"svc-003\"],[\"svc-004\",\"svc-005\"],[\"svc-006\"],[\"svc-007\",\"svc-008\"],[\"svc-009\"],[\"svc-010\",\"svc-011\"],[\"svc-012\"],[\"svc-013\",\"svc-014\"],[\"svc-015\"],[\"svc-016\",\"svc-017\"],[\"svc-018\"],[\"svc-019\",\"svc-020\"],[\"svc-021\"],[\"svc-022\",\"svc-023\"],[\"svc-024\"],[\"svc-025\",\"svc-026\"],[\"svc-027\"],[\"svc-028\",\"svc-029\"],[\"svc-030\"],[\"svc-031\",\"svc-032\"],[\"svc-033\"],[\"svc-034\",\"svc-035\"],[\"svc-036\"],[\"svc-037\",\"svc-038\"],[\"svc-039\"],[\"svc-040\",\"svc-041\"],[\"svc-042\"],[\"svc-043\",\"svc-044\"],[\"svc-045\"],[\"svc-046\",\"svc-047\"],[\"svc-048\"],[\"svc-049\",\"svc-050\"],[\"svc-051\"],[\"svc-052\",\"svc-053\"],[\"svc-054\"],[\"svc-055\",\"svc-056\"],[\"svc-057\"],[\"svc-058\",\"svc-059\"],[\"svc-060\"],[\"svc-061\",\"svc-062\"],[\"svc-063\"],[\"svc-064\",\"svc-065\"],[\"svc-066\"],[\"svc-067\",\"svc-068\"],[\"svc-069\"],[\"svc-070\",\"svc-071\"],[\"svc-072\"],[\"svc-073\",\"svc-074\"],[\"svc-075\"],[\"svc-076\",\"svc-077\"],[\"svc-078\"],[\"svc-079\",\"svc-080\"],[\"svc-081\"],[\"svc-082\",\"svc-083\"],[\"svc-084\"],[\"svc-085\",\"svc-086\"],[\"svc-087\"],[\"svc-088\",\"svc-089\"],[\"svc-090\"]]}",
+  "error": false
+ },
+ {
+  "shape": "sparse random",
+  "seed": 0,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-009\",\"svc-010\",\"svc-012\",\"svc-013\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-021\",\"svc-023\",\"svc-024\",\"svc-025\",\"svc-028\",\"svc-029\"],[\"svc-008\",\"svc-011\",\"svc-020\",\"svc-022\",\"svc-026\",\"svc-027\"],[\"svc-014\"]]}",
+  "error": false
+ },
+ {
+  "shape": "sparse random",
+  "seed": 1,
+  "finish": "stop",
+  "reply": "\n\n**Working**\n\n1. Assign phase\u202f1 to all components with no dependencies.  \n2. For each remaining component, set its phase to\u202f1\u202f+\u202fthe maximum phase of its dependencies.  \n3. Verify that every dependency\u2019s phase is strictly less than the component\u2019s phase and that each component appears exactly once.\n\nThe resulting phase numbers are:\n\n| Phase | Components |\n|-------|------------|\n| 1 | svc-000, svc-001, svc-002, svc-003, svc-006, svc-007, svc-009, svc-010, svc-011, svc-015, svc-019, svc-021, svc-022, svc-023, svc-026, svc-030, svc-031, svc-036, svc-041, svc-043, svc-049, svc-062 |\n| 2 | svc-004, svc-005, svc-008, svc-012, svc-013, svc-014, svc-024, svc-025, svc-028, svc-032, svc-038, svc-039, svc-042, svc-044, svc-045, svc-047, svc-056, svc-059, svc-061 |\n| 3 | svc-016, svc-018, svc-027, svc-029, svc-035, svc-040, svc-046, svc-048, svc-051, svc-055, svc-057, svc-060, svc-064 |\n| 4 | svc-017, svc-020, svc-033, svc-034, svc-052, svc-054 |\n| 5 | svc-037, svc-050, svc-063 |\n| 6 | svc-053, svc-058 |\n\nAll checks pass.\n\n**Answer**\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-006\",\"svc-007\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-015\",\"svc-019\",\"svc-021\",\"svc-022\",\"svc-023\",\"svc-026\",\"svc-030\",\"svc-031\",\"svc-036\",\"svc-041\",\"svc-043\",\"svc-049\",\"svc-062\"],[\"svc-004\",\"svc-005\",\"svc-008\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-024\",\"svc-025\",\"svc-028\",\"svc-032\",\"svc-038\",\"svc-039\",\"svc-042\",\"svc-044\",\"svc-045\",\"svc-047\",\"svc-056\",\"svc-059\",\"svc-061\"],[\"svc-016\",\"svc-018\",\"svc-027\",\"svc-029\",\"svc-035\",\"svc-040\",\"svc-046\",\"svc-048\",\"svc-051\",\"svc-055\",\"svc-057\",\"svc-060\",\"svc-064\"],[\"svc-017\",\"svc-020\",\"svc-033\",\"svc-034\",\"svc-052\",\"svc-054\"],[\"svc-037\",\"svc-050\",\"svc-063\"],[\"svc-053\",\"svc-058\"]]}",
+  "error": false
+ },
+ {
+  "shape": "sparse random",
+  "seed": 2,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\":[[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-007\",\"svc-009\",\"svc-013\",\"svc-014\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-023\",\"svc-024\",\"svc-028\",\"svc-031\",\"svc-036\",\"svc-041\",\"svc-050\",\"svc-053\",\"svc-058\"],[\"svc-006\",\"svc-008\",\"svc-010\",\"svc-011\",\"svc-015\",\"svc-016\",\"svc-026\",\"svc-030\",\"svc-032\",\"svc-034\",\"svc-035\",\"svc-037\",\"svc-039\",\"svc-044\",\"svc-047\",\"svc-060\",\"svc-065\",\"svc-066\",\"svc-068\"],[\"svc-012\",\"svc-020\",\"svc-021\",\"svc-022\",\"svc-027\",\"svc-033\",\"svc-040\",\"svc-042\",\"svc-052\",\"svc-055\",\"svc-057\",\"svc-061\",\"svc-064\"],[\"svc-025\",\"svc-029\",\"svc-038\",\"svc-043\",\"svc-048\",\"svc-049\",\"svc-051\",\"svc-056\",\"svc-062\",\"svc-071\",\"svc-075\",\"svc-076\"],[\"svc-045\",\"svc-046\",\"svc-059\",\"svc-067\",\"svc-069\"],[\"svc-054\",\"svc-073\"],[\"svc-063\",\"svc-070\"],[\"svc-072\"],[\"svc-074\"]]}",
+  "error": false
+ },
+ {
+  "shape": "sparse random",
+  "seed": 3,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-011\",\"svc-013\",\"svc-014\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-025\",\"svc-027\",\"svc-029\",\"svc-044\",\"svc-049\",\"svc-070\"],[\"svc-010\",\"svc-012\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-022\",\"svc-023\",\"svc-024\",\"svc-028\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-045\",\"svc-068\"],[\"svc-021\",\"svc-026\",\"svc-030\",\"svc-032\",\"svc-037\",\"svc-042\",\"svc-047\",\"svc-048\",\"svc-051\",\"svc-052\",\"svc-054\",\"svc-062\"],[\"svc-031\",\"svc-036\",\"svc-041\",\"svc-055\",\"svc-056\",\"svc-067\",\"svc-072\"],[\"svc-038\",\"svc-058\",\"svc-066\",\"svc-075\"],[\"svc-039\",\"svc-040\",\"svc-053\",\"svc-059\",\"svc-061\",\"svc-069\"],[\"svc-043\",\"svc-046\",\"svc-057\",\"svc-060\"],[\"svc-050\",\"svc-063\",\"svc-065\",\"svc-071\",\"svc-074\"],[\"svc-064\",\"svc-073\"]]}",
+  "error": false
+ },
+ {
+  "shape": "sparse random",
+  "seed": 4,
+  "finish": "length",
+  "reply": null,
+  "error": false
+ },
+ {
+  "shape": "dense random",
+  "seed": 0,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-004\"],[\"svc-003\",\"svc-005\",\"svc-006\",\"svc-009\"],[\"svc-007\",\"svc-008\"],[\"svc-010\",\"svc-011\",\"svc-012\",\"svc-014\"],[\"svc-013\",\"svc-016\",\"svc-017\",\"svc-018\"],[\"svc-015\",\"svc-019\",\"svc-020\"],[\"svc-021\",\"svc-022\"],[\"svc-023\",\"svc-024\",\"svc-025\"],[\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\"],[\"svc-030\"],[\"svc-031\",\"svc-033\"],[\"svc-032\"],[\"svc-034\"],[\"svc-035\",\"svc-036\"]]}",
+  "error": false
+ },
+ {
+  "shape": "dense random",
+  "seed": 1,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-006\",\"svc-009\",\"svc-010\"],[\"svc-005\"],[\"svc-007\"],[\"svc-008\"]]}",
+  "error": false
+ },
+ {
+  "shape": "dense random",
+  "seed": 2,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-012\",\"svc-019\"],[\"svc-008\",\"svc-010\",\"svc-011\",\"svc-013\"],[\"svc-009\",\"svc-018\"],[\"svc-014\",\"svc-015\",\"svc-016\",\"svc-017\"],[\"svc-020\"]]}",
+  "error": false
+ },
+ {
+  "shape": "dense random",
+  "seed": 3,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-012\",\"svc-019\",\"svc-025\"],[\"svc-003\",\"svc-005\",\"svc-009\",\"svc-013\"],[\"svc-004\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-020\"],[\"svc-010\",\"svc-011\",\"svc-015\",\"svc-017\",\"svc-021\",\"svc-027\",\"svc-034\"],[\"svc-014\",\"svc-018\",\"svc-022\",\"svc-023\",\"svc-024\"],[\"svc-016\",\"svc-030\"],[\"svc-026\",\"svc-028\",\"svc-029\"],[\"svc-031\"],[\"svc-032\"],[\"svc-033\"]]}",
+  "error": false
+ },
+ {
+  "shape": "dense random",
+  "seed": 4,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-006\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-015\",\"svc-019\",\"svc-022\"],[\"svc-004\",\"svc-005\",\"svc-007\",\"svc-011\",\"svc-012\",\"svc-014\",\"svc-016\",\"svc-025\"],[\"svc-013\",\"svc-017\",\"svc-018\",\"svc-020\",\"svc-021\"],[\"svc-023\",\"svc-027\"],[\"svc-024\",\"svc-026\"],[\"svc-028\",\"svc-029\"]]}",
+  "error": false
+ },
+ {
+  "shape": "chain with branches",
+  "seed": 0,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\"], [\"svc-001\",\"svc-043\",\"svc-049\"], [\"svc-002\",\"svc-020\"], [\"svc-003\",\"svc-024\",\"svc-042\",\"svc-045\"], [\"svc-004\",\"svc-054\"], [\"svc-005\"], [\"svc-022\",\"svc-027\",\"svc-033\",\"svc-034\",\"svc-047\"], [\"svc-031\",\"svc-035\",\"svc-046\"], [\"svc-030\"], [\"svc-021\",\"svc-025\",\"svc-037\",\"svc-041\",\"svc-052\"], [\"svc-032\"], [\"svc-011\",\"svc-018\",\"svc-023\",\"svc-026\",\"svc-029\",\"svc-039\",\"svc-048\",\"svc-053\"], [\"svc-012\",\"svc-036\",\"svc-040\",\"svc-044\",\"svc-050\"], [\"svc-013\"], [\"svc-014\",\"svc-019\",\"svc-055\"], [\"svc-015\"], [\"svc-016\"], [\"svc-017\"], [\"svc-028\",\"svc-038\",\"svc-051\"]]}",
+  "error": false
+ },
+ {
+  "shape": "chain with branches",
+  "seed": 1,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\"], [\"svc-001\",\"svc-004\"], [\"svc-002\",\"svc-005\",\"svc-009\"], [\"svc-003\",\"svc-006\",\"svc-007\",\"svc-008\"]]}",
+  "error": false
+ },
+ {
+  "shape": "chain with branches",
+  "seed": 2,
+  "finish": "length",
+  "reply": null,
+  "error": false
+ },
+ {
+  "shape": "chain with branches",
+  "seed": 3,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\"], [\"svc-001\",\"svc-032\",\"svc-043\",\"svc-053\"], [\"svc-002\",\"svc-049\"], [\"svc-003\",\"svc-040\"], [\"svc-004\",\"svc-030\"], [\"svc-005\",\"svc-056\"], [\"svc-006\",\"svc-024\",\"svc-034\"], [\"svc-007\",\"svc-025\"], [\"svc-008\",\"svc-019\"], [\"svc-009\"], [\"svc-010\"], [\"svc-011\",\"svc-029\",\"svc-038\",\"svc-054\"], [\"svc-012\"], [\"svc-013\",\"svc-026\",\"svc-035\",\"svc-048\"], [\"svc-014\",\"svc-022\",\"svc-033\",\"svc-044\"], [\"svc-015\",\"svc-028\",\"svc-031\",\"svc-046\",\"svc-052\"], [\"svc-016\",\"svc-020\",\"svc-042\",\"svc-045\"], [\"svc-017\",\"svc-036\",\"svc-047\",\"svc-051\"], [\"svc-018\",\"svc-021\",\"svc-023\",\"svc-027\",\"svc-055\"], [\"svc-037\",\"svc-039\",\"svc-041\",\"svc-050\"]]}",
+  "error": false
+ },
+ {
+  "shape": "chain with branches",
+  "seed": 4,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\"],[\"svc-001\",\"svc-055\"],[\"svc-002\",\"svc-075\"],[\"svc-003\",\"svc-036\",\"svc-065\"],[\"svc-004\",\"svc-071\"],[\"svc-005\",\"svc-038\",\"svc-083\"],[\"svc-006\",\"svc-040\",\"svc-041\"],[\"svc-007\",\"svc-034\",\"svc-053\",\"svc-080\"],[\"svc-008\",\"svc-047\",\"svc-074\"],[\"svc-009\",\"svc-063\"],[\"svc-010\",\"svc-051\"],[\"svc-011\",\"svc-033\",\"svc-067\",\"svc-068\"],[\"svc-012\",\"svc-035\",\"svc-057\",\"svc-085\"],[\"svc-013\",\"svc-056\"],[\"svc-014\"],[\"svc-015\",\"svc-076\",\"svc-084\"],[\"svc-016\",\"svc-045\",\"svc-058\",\"svc-069\"],[\"svc-017\"],[\"svc-018\",\"svc-050\",\"svc-081\"],[\"svc-019\",\"svc-029\",\"svc-039\",\"svc-082\"],[\"svc-020\",\"svc-042\",\"svc-044\",\"svc-061\"],[\"svc-021\",\"svc-030\",\"svc-066\",\"svc-073\"],[\"svc-022\",\"svc-052\",\"svc-077\"],[\"svc-023\",\"svc-037\",\"svc-048\",\"svc-054\"],[\"svc-024\",\"svc-043\",\"svc-079\"],[\"svc-025\",\"svc-046\",\"svc-060\"],[\"svc-026\",\"svc-049\",\"svc-062\"],[\"svc-027\",\"svc-064\",\"svc-070\"],[\"svc-028\",\"svc-031\",\"svc-059\",\"svc-072\",\"svc-078\",\"svc-086\"],[\"svc-032\"]]}",
+  "error": false
+ },
+ {
+  "shape": "isolated",
+  "seed": 0,
+  "finish": "stop",
+  "reply": "\n\n{\n  \"phases\": [\n    [\n      \"svc-000\",\n      \"svc-001\",\n      \"svc-002\",\n      \"svc-003\",\n      \"svc-004\",\n      \"svc-005\",\n      \"svc-006\",\n      \"svc-007\",\n      \"svc-008\",\n      \"svc-009\",\n      \"svc-010\",\n      \"svc-011\",\n      \"svc-012\",\n      \"svc-013\",\n      \"svc-014\",\n      \"svc-015\",\n      \"svc-016\",\n      \"svc-017\",\n      \"svc-018\",\n      \"svc-019\",\n      \"svc-020\",\n      \"svc-021\",\n      \"svc-022\",\n      \"svc-023\",\n      \"svc-024\",\n      \"svc-025\",\n      \"svc-026\",\n      \"svc-027\",\n      \"svc-028\",\n      \"svc-029\",\n      \"svc-030\",\n      \"svc-031\",\n      \"svc-032\",\n      \"svc-033\",\n      \"svc-034\",\n      \"svc-035\",\n      \"svc-036\",\n      \"svc-037\",\n      \"svc-038\",\n      \"svc-039\",\n      \"svc-040\",\n      \"svc-041\",\n      \"svc-042\",\n      \"svc-043\",\n      \"svc-044\",\n      \"svc-045\",\n      \"svc-046\",\n      \"svc-047\",\n      \"svc-048\",\n      \"svc-049\",\n      \"svc-050\",\n      \"svc-051\",\n      \"svc-052\",\n      \"svc-053\",\n      \"svc-054\",\n      \"svc-055\",\n      \"svc-056\",\n      \"svc-057\",\n      \"svc-058\",\n      \"svc-059\",\n      \"svc-060\",\n      \"svc-061\",\n      \"svc-062\",\n      \"svc-063\",\n      \"svc-064\",\n      \"svc-065\",\n      \"svc-066\",\n      \"svc-067\",\n      \"svc-068\",\n      \"svc-069\",\n      \"svc-070\",\n      \"svc-071\",\n      \"svc-072\",\n      \"svc-073\",\n      \"svc-074\",\n      \"svc-075\",\n      \"svc-076\",\n      \"svc-077\",\n      \"svc-078\",\n      \"svc-079\",\n      \"svc-080\",\n      \"svc-081\",\n      \"svc-082\",\n      \"svc-083\",\n      \"svc-084\",\n      \"svc-085\",\n      \"svc-086\",\n      \"svc-087\",\n      \"svc-088\",\n      \"svc-089\",\n      \"svc-090\",\n      \"svc-091\",\n      \"svc-092\",\n      \"svc-093\",\n      \"svc-094\",\n      \"svc-095\",\n      \"svc-096\",\n      \"svc-097\",\n      \"svc-098\",\n      \"svc-099\",\n      \"svc-100\",\n      \"svc-101\",\n      \"svc-102\",\n      \"svc-103\",\n      \"svc-104\",\n      \"svc-105\",\n      \"svc-106\",\n      \"svc-107\",\n      \"svc-108\",\n      \"svc-109\",\n      \"svc-110\",\n      \"svc-111\",\n      \"svc-112\",\n      \"svc-113\",\n      \"svc-114\",\n      \"svc-115\",\n      \"svc-116\",\n      \"svc-117\",\n      \"svc-118\",\n      \"svc-119\",\n      \"svc-120\",\n      \"svc-121\",\n      \"svc-122\",\n      \"svc-123\",\n      \"svc-124\",\n      \"svc-125\",\n      \"svc-126\",\n      \"svc-127\",\n      \"svc-128\",\n      \"svc-129\",\n      \"svc-130\",\n      \"svc-131\",\n      \"svc-132\",\n      \"svc-133\",\n      \"svc-134\",\n      \"svc-135\",\n      \"svc-136\",\n      \"svc-137\",\n      \"svc-138\",\n      \"svc-139\",\n      \"svc-140\",\n      \"svc-141\",\n      \"svc-142\",\n      \"svc-143\",\n      \"svc-144\",\n      \"svc-145\",\n      \"svc-146\",\n      \"svc-147\",\n      \"svc-148\",\n      \"svc-149\",\n      \"svc-150\",\n      \"svc-151\",\n      \"svc-152\",\n      \"svc-153\",\n      \"svc-154\",\n      \"svc-155\",\n      \"svc-156\",\n      \"svc-157\",\n      \"svc-158\",\n      \"svc-159\",\n      \"svc-160\"\n    ]\n  ]\n}",
+  "error": false
+ },
+ {
+  "shape": "isolated",
+  "seed": 1,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-021\",\"svc-022\",\"svc-023\",\"svc-024\",\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\"svc-031\",\"svc-032\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-036\",\"svc-037\",\"svc-038\",\"svc-039\",\"svc-040\",\"svc-041\",\"svc-042\",\"svc-043\",\"svc-044\",\"svc-045\",\"svc-046\",\"svc-047\",\"svc-048\",\"svc-049\",\"svc-050\",\"svc-051\",\"svc-052\",\"svc-053\",\"svc-054\",\"svc-055\",\"svc-056\",\"svc-057\",\"svc-058\",\"svc-059\",\"svc-060\",\"svc-061\",\"svc-062\",\"svc-063\",\"svc-064\",\"svc-065\",\"svc-066\",\"svc-067\",\"svc-068\",\"svc-069\",\"svc-070\",\"svc-071\",\"svc-072\",\"svc-073\",\"svc-074\",\"svc-075\",\"svc-076\",\"svc-077\",\"svc-078\",\"svc-079\",\"svc-080\",\"svc-081\",\"svc-082\",\"svc-083\",\"svc-084\",\"svc-085\",\"svc-086\",\"svc-087\",\"svc-088\",\"svc-089\",\"svc-090\",\"svc-091\",\"svc-092\",\"svc-093\",\"svc-094\",\"svc-095\",\"svc-096\",\"svc-097\",\"svc-098\",\"svc-099\",\"svc-100\",\"svc-101\",\"svc-102\",\"svc-103\",\"svc-104\",\"svc-105\",\"svc-106\",\"svc-107\",\"svc-108\",\"svc-109\",\"svc-110\",\"svc-111\",\"svc-112\",\"svc-113\",\"svc-114\",\"svc-115\",\"svc-116\"]]}",
+  "error": false
+ },
+ {
+  "shape": "isolated",
+  "seed": 2,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-021\",\"svc-022\",\"svc-023\",\"svc-024\",\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\"svc-031\",\"svc-032\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-036\",\"svc-037\",\"svc-038\",\"svc-039\",\"svc-040\",\"svc-041\",\"svc-042\",\"svc-043\",\"svc-044\",\"svc-045\",\"svc-046\",\"svc-047\",\"svc-048\",\"svc-049\",\"svc-050\",\"svc-051\",\"svc-052\",\"svc-053\",\"svc-054\",\"svc-055\",\"svc-056\",\"svc-057\",\"svc-058\",\"svc-059\",\"svc-060\",\"svc-061\",\"svc-062\",\"svc-063\",\"svc-064\",\"svc-065\",\"svc-066\",\"svc-067\",\"svc-068\",\"svc-069\",\"svc-070\",\"svc-071\",\"svc-072\",\"svc-073\",\"svc-074\",\"svc-075\",\"svc-076\",\"svc-077\",\"svc-078\",\"svc-079\",\"svc-080\",\"svc-081\",\"svc-082\",\"svc-083\",\"svc-084\",\"svc-085\",\"svc-086\",\"svc-087\",\"svc-088\",\"svc-089\",\"svc-090\",\"svc-091\",\"svc-092\",\"svc-093\",\"svc-094\",\"svc-095\",\"svc-096\",\"svc-097\",\"svc-098\",\"svc-099\",\"svc-100\",\"svc-101\",\"svc-102\",\"svc-103\",\"svc-104\",\"svc-105\",\"svc-106\",\"svc-107\",\"svc-108\",\"svc-109\",\"svc-110\",\"svc-111\",\"svc-112\",\"svc-113\",\"svc-114\",\"svc-115\",\"svc-116\",\"svc-117\",\"svc-118\",\"svc-119\",\"svc-120\",\"svc-121\",\"svc-122\",\"svc-123\",\"svc-124\",\"svc-125\",\"svc-126\",\"svc-127\",\"svc-128\",\"svc-129\",\"svc-130\",\"svc-131\",\"svc-132\",\"svc-133\",\"svc-134\",\"svc-135\",\"svc-136\",\"svc-137\",\"svc-138\",\"svc-139\",\"svc-140\",\"svc-141\"]]}",
+  "error": false
+ },
+ {
+  "shape": "isolated",
+  "seed": 3,
+  "finish": "stop",
+  "reply": "\n\nAll components have no dependencies, so each can be assigned phase\u202f1. Placing every component in a single phase satisfies the dependency constraints and uses the minimum possible number of phases.\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-021\",\"svc-022\",\"svc-023\",\"svc-024\",\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\"svc-031\",\"svc-032\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-036\",\"svc-037\",\"svc-038\",\"svc-039\",\"svc-040\",\"svc-041\",\"svc-042\",\"svc-043\",\"svc-044\",\"svc-045\",\"svc-046\",\"svc-047\",\"svc-048\",\"svc-049\",\"svc-050\",\"svc-051\",\"svc-052\",\"svc-053\",\"svc-054\",\"svc-055\",\"svc-056\",\"svc-057\",\"svc-058\",\"svc-059\",\"svc-060\",\"svc-061\",\"svc-062\",\"svc-063\",\"svc-064\",\"svc-065\",\"svc-066\",\"svc-067\"]]}",
+  "error": false
+ },
+ {
+  "shape": "isolated",
+  "seed": 4,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-021\",\"svc-022\",\"svc-023\",\"svc-024\",\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\"svc-031\",\"svc-032\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-036\",\"svc-037\",\"svc-038\"]]}",
+  "error": false
+ },
+ {
+  "shape": "hub",
+  "seed": 0,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\"], [\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-012\",\"svc-014\",\"svc-017\",\"svc-018\",\"svc-021\",\"svc-025\",\"svc-026\",\"svc-028\",\"svc-033\",\"svc-038\",\"svc-040\",\"svc-048\",\"svc-051\",\"svc-053\"], [\"svc-006\",\"svc-010\",\"svc-011\",\"svc-016\",\"svc-019\",\"svc-023\",\"svc-027\",\"svc-029\",\"svc-031\",\"svc-036\",\"svc-042\",\"svc-049\"], [\"svc-013\",\"svc-020\",\"svc-030\",\"svc-032\",\"svc-034\",\"svc-043\",\"svc-045\",\"svc-047\",\"svc-055\",\"svc-056\"], [\"svc-015\",\"svc-022\",\"svc-024\",\"svc-035\",\"svc-037\",\"svc-039\",\"svc-041\",\"svc-044\",\"svc-046\",\"svc-050\"], [\"svc-052\",\"svc-054\"]]}",
+  "error": false
+ },
+ {
+  "shape": "hub",
+  "seed": 1,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\"], [\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-013\",\"svc-014\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-020\",\"svc-026\",\"svc-029\",\"svc-044\",\"svc-048\",\"svc-058\"], [\"svc-006\",\"svc-007\",\"svc-012\",\"svc-015\",\"svc-019\",\"svc-021\",\"svc-022\",\"svc-023\",\"svc-027\",\"svc-028\",\"svc-033\",\"svc-035\",\"svc-045\",\"svc-050\"], [\"svc-011\",\"svc-024\",\"svc-031\",\"svc-034\",\"svc-036\",\"svc-037\",\"svc-039\",\"svc-041\",\"svc-049\",\"svc-059\",\"svc-073\",\"svc-085\",\"svc-086\"], [\"svc-025\",\"svc-040\",\"svc-051\",\"svc-056\",\"svc-060\",\"svc-070\",\"svc-087\"], [\"svc-030\",\"svc-032\",\"svc-042\",\"svc-074\",\"svc-092\"], [\"svc-038\",\"svc-043\",\"svc-046\",\"svc-047\",\"svc-052\",\"svc-053\",\"svc-067\",\"svc-069\"], [\"svc-054\",\"svc-055\",\"svc-061\",\"svc-062\",\"svc-071\",\"svc-079\",\"svc-080\",\"svc-083\",\"svc-084\",\"svc-088\",\"svc-089\"], [\"svc-057\",\"svc-063\",\"svc-064\",\"svc-065\",\"svc-066\",\"svc-068\",\"svc-075\",\"svc-076\",\"svc-077\",\"svc-082\",\"svc-090\"], [\"svc-072\",\"svc-076\",\"svc-081\",\"svc-088\"], [\"svc-078\",\"svc-091\",\"svc-093\"]]}",
+  "error": false
+ },
+ {
+  "shape": "hub",
+  "seed": 2,
+  "finish": "length",
+  "reply": null,
+  "error": false
+ },
+ {
+  "shape": "hub",
+  "seed": 3,
+  "finish": "length",
+  "reply": null,
+  "error": false
+ },
+ {
+  "shape": "hub",
+  "seed": 4,
+  "finish": "length",
+  "reply": null,
+  "error": false
+ },
+ {
+  "shape": "wide then deep",
+  "seed": 0,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\":[[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-021\",\"svc-022\",\"svc-023\",\"svc-024\",\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\"svc-031\",\"svc-032\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-036\",\"svc-037\",\"svc-038\",\"svc-039\",\"svc-040\",\"svc-041\",\"svc-042\",\"svc-043\",\"svc-044\"],[\"svc-045\"],[\"svc-046\"],[\"svc-047\"],[\"svc-048\"],[\"svc-049\"],[\"svc-050\"],[\"svc-051\"],[\"svc-052\"],[\"svc-053\"],[\"svc-054\"],[\"svc-055\"],[\"svc-056\"],[\"svc-057\"],[\"svc-058\"],[\"svc-059\"],[\"svc-060\"],[\"svc-061\"],[\"svc-062\"],[\"svc-063\"],[\"svc-064\"],[\"svc-065\"],[\"svc-066\"],[\"svc-067\"],[\"svc-068\"],[\"svc-069\"],[\"svc-070\"],[\"svc-071\"],[\"svc-072\"],[\"svc-073\"],[\"svc-074\"],[\"svc-075\"],[\"svc-076\"],[\"svc-077\"],[\"svc-078\"],[\"svc-079\"],[\"svc-080\"],[\"svc-081\"],[\"svc-082\"],[\"svc-083\"],[\"svc-084\"],[\"svc-085\"],[\"svc-086\"],[\"svc-087\"],[\"svc-088\"],[\"svc-089\"]]}",
+  "error": false
+ },
+ {
+  "shape": "wide then deep",
+  "seed": 1,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\":[[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-021\",\"svc-022\",\"svc-023\",\"svc-024\",\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\"svc-031\",\"svc-032\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-036\",\"svc-037\",\"svc-038\",\"svc-039\",\"svc-040\"],[\"svc-041\"],[\"svc-042\"],[\"svc-043\"],[\"svc-044\"],[\"svc-045\"],[\"svc-046\"],[\"svc-047\"],[\"svc-048\"],[\"svc-049\"],[\"svc-050\"],[\"svc-051\"],[\"svc-052\"],[\"svc-053\"],[\"svc-054\"],[\"svc-055\"],[\"svc-056\"],[\"svc-057\"],[\"svc-058\"],[\"svc-059\"],[\"svc-060\"],[\"svc-061\"],[\"svc-062\"],[\"svc-063\"],[\"svc-064\"],[\"svc-065\"],[\"svc-066\"],[\"svc-067\"],[\"svc-068\"],[\"svc-069\"],[\"svc-070\"],[\"svc-071\"],[\"svc-072\"],[\"svc-073\"],[\"svc-074\"],[\"svc-075\"],[\"svc-076\"],[\"svc-077\"],[\"svc-078\"],[\"svc-079\"],[\"svc-080\"],[\"svc-081\"]]}",
+  "error": false
+ },
+ {
+  "shape": "wide then deep",
+  "seed": 2,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-021\",\"svc-022\",\"svc-023\",\"svc-024\",\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\"svc-031\",\"svc-032\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-036\",\"svc-037\",\"svc-038\",\"svc-039\",\"svc-040\",\"svc-041\",\"svc-042\",\"svc-043\",\"svc-044\",\"svc-045\"],[\"svc-046\"],[\"svc-047\"],[\"svc-048\"],[\"svc-049\"],[\"svc-050\"],[\"svc-051\"],[\"svc-052\"],[\"svc-053\"],[\"svc-054\"],[\"svc-055\"],[\"svc-056\"],[\"svc-057\"],[\"svc-058\"],[\"svc-059\"],[\"svc-060\"],[\"svc-061\"],[\"svc-062\"],[\"svc-063\"],[\"svc-064\"],[\"svc-065\"],[\"svc-066\"],[\"svc-067\"],[\"svc-068\"],[\"svc-069\"],[\"svc-070\"],[\"svc-071\"],[\"svc-072\"],[\"svc-073\"],[\"svc-074\"],[\"svc-075\"],[\"svc-076\"],[\"svc-077\"],[\"svc-078\"],[\"svc-079\"],[\"svc-080\"],[\"svc-081\"],[\"svc-082\"],[\"svc-083\"],[\"svc-084\"],[\"svc-085\"],[\"svc-086\"],[\"svc-087\"],[\"svc-088\"],[\"svc-089\"],[\"svc-090\"],[\"svc-091\"]]}",
+  "error": false
+ },
+ {
+  "shape": "wide then deep",
+  "seed": 3,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\": [[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-021\",\"svc-022\",\"svc-023\",\"svc-024\",\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\"svc-031\",\"svc-032\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-036\",\"svc-037\"],[\"svc-038\"],[\"svc-039\"],[\"svc-040\"],[\"svc-041\"],[\"svc-042\"],[\"svc-043\"],[\"svc-044\"],[\"svc-045\"],[\"svc-046\"],[\"svc-047\"],[\"svc-048\"],[\"svc-049\"],[\"svc-050\"],[\"svc-051\"],[\"svc-052\"],[\"svc-053\"],[\"svc-054\"],[\"svc-055\"],[\"svc-056\"],[\"svc-057\"],[\"svc-058\"],[\"svc-059\"],[\"svc-060\"],[\"svc-061\"],[\"svc-062\"],[\"svc-063\"],[\"svc-064\"],[\"svc-065\"],[\"svc-066\"],[\"svc-067\"],[\"svc-068\"],[\"svc-069\"],[\"svc-070\"],[\"svc-071\"],[\"svc-072\"],[\"svc-073\"],[\"svc-074\"],[\"svc-075\"],[\"svc-076\"]]}",
+  "error": false
+ },
+ {
+  "shape": "wide then deep",
+  "seed": 4,
+  "finish": "stop",
+  "reply": "\n\n{\"phases\":[[\"svc-000\",\"svc-001\",\"svc-002\",\"svc-003\",\"svc-004\",\"svc-005\",\"svc-006\",\"svc-007\",\"svc-008\",\"svc-009\",\"svc-010\",\"svc-011\",\"svc-012\",\"svc-013\",\"svc-014\",\"svc-015\",\"svc-016\",\"svc-017\",\"svc-018\",\"svc-019\",\"svc-020\",\"svc-021\",\"svc-022\",\"svc-023\",\"svc-024\",\"svc-025\",\"svc-026\",\"svc-027\",\"svc-028\",\"svc-029\",\"svc-030\",\"svc-031\",\"svc-032\",\"svc-033\",\"svc-034\",\"svc-035\",\"svc-036\",\"svc-037\",\"svc-038\",\"svc-039\",\"svc-040\",\"svc-041\",\"svc-042\"],[\"svc-043\"],[\"svc-044\"],[\"svc-045\"],[\"svc-046\"],[\"svc-047\"],[\"svc-048\"],[\"svc-049\"],[\"svc-050\"],[\"svc-051\"],[\"svc-052\"],[\"svc-053\"],[\"svc-054\"],[\"svc-055\"],[\"svc-056\"],[\"svc-057\"],[\"svc-058\"],[\"svc-059\"],[\"svc-060\"],[\"svc-061\"],[\"svc-062\"],[\"svc-063\"],[\"svc-064\"],[\"svc-065\"],[\"svc-066\"],[\"svc-067\"],[\"svc-068\"],[\"svc-069\"],[\"svc-070\"],[\"svc-071\"],[\"svc-072\"],[\"svc-073\"],[\"svc-074\"],[\"svc-075\"],[\"svc-076\"],[\"svc-077\"],[\"svc-078\"],[\"svc-079\"],[\"svc-080\"],[\"svc-081\"],[\"svc-082\"],[\"svc-083\"],[\"svc-084\"],[\"svc-085\"]]}",
+  "error": false
+ }
+]

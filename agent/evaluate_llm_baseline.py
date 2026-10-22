@@ -10,6 +10,7 @@ checker written here (it does not use the engine). Answers are scored on:
 API errors are counted separately and are NOT counted as model mistakes.
 
 Run:  python -m agent.evaluate_llm_baseline --seeds 5 --cache llm_cache.jsonl --write RESULTS_LLM_BASELINE.md
+      python -m agent.evaluate_llm_baseline --seeds 5 --prompt stepwise --cache llm_cache_stepwise.jsonl --write RESULTS_LLM_BASELINE_STEPWISE.md
 """
 import json
 import os
@@ -22,6 +23,7 @@ from agent.evaluate_generated import SHAPES, generate_case
 MODEL = os.environ.get("NEBIUS_MODEL", "nvidia/nemotron-3-super-120b-a12b")
 BASE_URL = os.environ.get("NEBIUS_BASE_URL", "https://api.tokenfactory.nebius.com/v1/")
 MAX_TOKENS = int(os.environ.get("BASELINE_MAX_TOKENS", "30000"))
+VARIANT = "plain"
 RAW = []   # (shape, seed, finish_reason, reply) for inspection
 
 PROMPT = """You are planning a cloud migration. Each component lists the components it
@@ -37,12 +39,32 @@ Reply with JSON only, in this exact form:
 Every component must appear exactly once."""
 
 
-def render_prompt(components):
+STEPWISE = """You are planning a cloud migration. Each component lists the components it
+depends on. A component can only migrate in a phase AFTER every component it depends
+on has migrated. Use as few phases as possible.
+
+Components (id, dependencies):
+{lines}
+
+Work step by step before you answer:
+1. For each component, work out its phase number: 1 if it has no dependencies,
+   otherwise 1 plus the largest phase number among its dependencies.
+2. Check every dependency of every component: its phase number must be smaller than
+   the component's own.
+3. Check that every component appears exactly once.
+Then give the final answer as JSON only, on its own after your working, in this
+exact form:
+{{"phases": [["id", "id"], ["id"]]}}"""
+
+PROMPTS = {"plain": PROMPT, "stepwise": STEPWISE}
+
+
+def render_prompt(components, variant="plain"):
     lines = []
     for c in sorted(components, key=lambda c: c["id"]):
         deps = ", ".join(c["dependencies"]) or "none"
         lines.append(f"- {c['id']}: depends on {deps}")
-    return PROMPT.format(lines="\n".join(lines))
+    return PROMPTS[variant].format(lines="\n".join(lines))
 
 
 def parse_phases(text):
@@ -117,7 +139,7 @@ def _ask_with_retry(ask, prompt, tries=3):
             time.sleep(5 * 2 ** k)
 
 
-def run(seeds=5, ask=api_ask, shapes=None, workers=6, cache=None):
+def run(seeds=5, ask=api_ask, shapes=None, workers=6, cache=None, variant="plain"):
     """One row per (shape, seed). Answers are saved to `cache` (JSON lines) as they
     arrive, so a stopped run resumes without repeating finished cases."""
     import threading
@@ -139,7 +161,7 @@ def run(seeds=5, ask=api_ask, shapes=None, workers=6, cache=None):
             return done[job]
         comps = generate_case(shape, seed)
         try:
-            res = _ask_with_retry(ask, render_prompt(comps))
+            res = _ask_with_retry(ask, render_prompt(comps, variant))
             reply, fin = res if isinstance(res, tuple) else (res, None)
             rec = {"shape": shape, "seed": seed, "finish": fin, "reply": reply, "error": False}
         except Exception as e:  # network or API problem, not a model mistake
@@ -206,7 +228,7 @@ def render(rows):
 
     def cnt(k):
         return sum(1 for r in ok if r.get(k))
-    lines = ["# LLM-only baseline", "",
+    lines = [f"# LLM-only baseline ({VARIANT} prompt)", "",
              f"Model: {MODEL}, no tools, temperature 0. Graphs: {len(rows)} "
              f"({len(SHAPES)} shapes, same generator as the 550-case set).", "",
              "| Measure | LLM only |", "|---|---|",
@@ -238,7 +260,9 @@ if __name__ == "__main__":
     seeds = int(sys.argv[sys.argv.index("--seeds") + 1]) if "--seeds" in sys.argv else 5
     cache = sys.argv[sys.argv.index("--cache") + 1] if "--cache" in sys.argv else None
     workers = int(sys.argv[sys.argv.index("--workers") + 1]) if "--workers" in sys.argv else 6
-    rows = run(seeds, workers=workers, cache=cache)
+    if "--prompt" in sys.argv:
+        VARIANT = sys.argv[sys.argv.index("--prompt") + 1]
+    rows = run(seeds, workers=workers, cache=cache, variant=VARIANT)
     text = render(rows)
     if "--engine" in sys.argv:
         text += "\n" + render_engine(rows, engine_rows(seeds))
