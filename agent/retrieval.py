@@ -31,6 +31,14 @@ B = 0.75
 MIN_SCORE = 4.0          # below this the best note is not a real match
 RELATIVE_CUTOFF = 0.5    # other notes must score at least this share of the best
 MAX_RESULTS = 3
+# Hybrid retrieval (BM25 + embeddings). Off unless a caller switches it on, so
+# tests never touch the network. Cutoff chosen from the gap between in-scope
+# and off-topic scores in evaluate_retrieval (see RESULTS_RETRIEVAL.md).
+USE_EMBEDDINGS = False
+# The user's own question while one is being answered; lookup() searches with it
+# because the model's shortened topic can drop words that matter.
+QUESTION: Optional[str] = None
+EMBED_MIN_SCORE = 0.45
 
 _STOPWORDS = frozenset(
     "a an and are as at be but by can do does for from has have how if in into is it its "
@@ -137,9 +145,24 @@ def search(query: str, notes: List[Dict[str, str]]) -> List[Dict]:
     return [r for r in scored if r["score"] >= max(MIN_SCORE, best * RELATIVE_CUTOFF)][:MAX_RESULTS]
 
 
+def _find(topic: str, notes: list, directory: Optional[Path]) -> list:
+    """Hybrid search when enabled; BM25 if disabled, a custom directory, or any error."""
+    query = QUESTION or topic
+    if USE_EMBEDDINGS and directory is None:
+        try:
+            from agent import embed_retrieval as er
+            index = er.build_index(notes)
+            pairs = er.search_hybrid(query, notes, index, min_score=EMBED_MIN_SCORE)
+            return [{"note": n, "score": round(s, 4)} for n, s in pairs]
+        except Exception:
+            pass
+    return search(query, notes)
+
+
 def lookup(topic: str, directory: Optional[Path] = None) -> Dict:
     """The tool result: matching notes with their ids, or an explicit no-match."""
-    hits = search(topic, load_notes(directory))
+    notes = load_notes(directory)
+    hits = _find(topic, notes, directory)
     for h in hits:
         RETURNED_IDS.add(h["note"]["id"].lower())
     if not hits:

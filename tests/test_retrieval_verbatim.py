@@ -54,7 +54,7 @@ def _run_ask(monkeypatch, topic, model_text):
         return model_text
 
     monkeypatch.setattr(orchestrator, "_ask_agent", fake_ask)
-    orchestrator.run("mock", None, None, ask_question="what can go wrong?")
+    orchestrator.run("mock", None, None, ask_question=topic or "what can go wrong?")
 
 
 def test_the_models_wording_is_replaced_when_the_tool_was_used(monkeypatch, capsys):

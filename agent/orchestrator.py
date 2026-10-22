@@ -600,7 +600,11 @@ def run(
         )
         print(f"\nAnswer to: \"{ask_question}\"\n")
         retrieval.reset_last()
-        response = _ask_agent(agent, prompt)
+        retrieval.QUESTION = ask_question
+        try:
+            response = _ask_agent(agent, prompt)
+        finally:
+            retrieval.QUESTION = None
         if retrieval.LAST_RESULTS:
             # The failure-mode tool was used: show the notes word for word.
             response = retrieval.render_answer(retrieval.LAST_RESULTS)
@@ -744,6 +748,7 @@ def run_right_sizing(source: str) -> None:
 
 
 def main():
+    retrieval.USE_EMBEDDINGS = True  # hybrid search; falls back to BM25 on any error
     parser = argparse.ArgumentParser(description="cloud-route autonomous migration agent")
     parser.add_argument("--source", choices=["mock", "k3s"], default="mock")
     parser.add_argument("--explain", choices=["engineer", "pm", "client"], default=None)
