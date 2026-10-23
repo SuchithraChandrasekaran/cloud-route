@@ -489,7 +489,9 @@ def _report_grounding(text: str, raw: dict) -> None:
     invented = find_unverifiable_component_like_tokens(text, raw)
     unsupported = find_unsupported_claims(text)
     uncited = retrieval.find_unreturned_citations(text)
-    if not invented and not unsupported and not uncited:
+    from agent.grounding_checks import find_extra_issues
+    extra = find_extra_issues(text, raw)
+    if not invented and not unsupported and not uncited and not extra:
         return
     print("\n[grounding warning] This response may go beyond the tool's data:")
     if invented:
@@ -498,6 +500,8 @@ def _report_grounding(text: str, raw: dict) -> None:
         print(f"  - unsupported claims: {unsupported}")
     if uncited:
         print(f"  - note ids cited that the tool did not return: {uncited}")
+    for kind, items in extra.items():
+        print(f"  - {kind}: {items}")
 
 
 # --------------------------------------------------------------------------
